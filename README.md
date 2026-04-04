@@ -128,7 +128,8 @@ The `.env.local` file contains sensitive credentials needed to run the applicati
 
 **Note:** Authentication via Clerk is planned for future releases.
 
-# Clerk Authentication (optional)
+### Clerk Authentication (optional)
+```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
 CLERK_SECRET_KEY="sk_..."
 ```
