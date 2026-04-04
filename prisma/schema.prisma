@@ -1,1 +1,232 @@
+// Voice-based SFU alumni fundraising call simulator
 
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// _________________________________________
+// USERS
+// _________________________________________
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      UserRole @default(TRAINEE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions  CallSession[]
+  reports   EvaluationReport[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  TRAINEE
+  COACH
+  ADMIN
+}
+
+// _________________________________________
+// PROSPECT PERSONAS
+// for how the AI actor behaves during a live call.
+// Each persona maps to one entry in that file.
+// _________________________________________
+
+
+model ProspectPersona {
+  id          String   @id @default(cuid())
+  externalId  String?  @unique // slug or ID from prospects.json, for easy sync
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Identity
+  name        String
+  age         Int?
+  graduationYear Int?
+  degree      String?  // e.g. "BSc Computer Science"
+  currentRole String?  // e.g. "Senior Engineer at Hootsuite"
+  city        String?
+
+  // AI actor control - these fields feed the system prompt at call time
+  personality String   // e.g. "warm but time-pressed", "skeptical of institutions"
+  backstory   String   // 2-3 sentence narrative for the AI to inhabit
+  prospectHistory ProspectHistory // how they've engaged with SFU in the past
+  likelyObjections String[] // ordered by likelihood, e.g. ["Already donate elsewhere", "Not a good time"]
+  triggerTopics   String[] // topics that warm them up, e.g. ["Co-op program", "research funding"]
+  targetAskRange  AskRange // what gift range is realistic for this persona
+
+  // Raw JSON snapshot - stored so the AI prompt builder always has the full blob
+  personaJson Json
+
+  sessions    CallSession[]
+  scenarios   ScenarioPersona[]
+
+  @@map("prospect_personas")
+}
+
+enum ProspectHistory {
+  NEVER_DONATED
+  LAPSED          // donated before, not recently
+  ANNUAL_DONOR    // consistent small gifts
+  MAJOR_DONOR     // significant past gift
+  UNKNOWN
+}
+
+enum AskRange {
+  UNDER_100
+  RANGE_100_500
+  RANGE_500_2500
+  OVER_2500
+}
+
+// _________________________________________
+// SCENARIOS
+// A scenario defines the training context —
+// which cohort of personas to pull from,
+// what the rep is practicing, and
+// what the eval rubric emphasizes.
+// _________________________________________
+
+model Scenario {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  difficulty  Difficulty @default(INTERMEDIATE)
+  focusSkills String[] // e.g. ["objection handling", "closing", "rapport"]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  personas    ScenarioPersona[]
+  sessions    CallSession[]
+
+  @@map("scenarios")
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+// Junction: which personas are available in a given scenario
+model ScenarioPersona {
+  scenarioId String
+  personaId  String
+
+  scenario   Scenario     @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  persona    ProspectPersona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@id([scenarioId, personaId])
+  @@map("scenario_personas")
+}
+
+// _________________________________________
+// CALL SESSIONS
+// One session = one practice call.
+// Audio is stored in Supabase Storage; we keep a reference URL here.
+// _________________________________________
+
+model CallSession {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+
+  scenarioId  String
+  scenario    Scenario      @relation(fields: [scenarioId], references: [id])
+
+  personaId   String
+  persona     ProspectPersona  @relation(fields: [personaId], references: [id])
+
+  // OpenAI Realtime session tracking
+  realtimeSessionId String?  @unique // session ID from OpenAI Realtime API
+
+  status      SessionStatus @default(IN_PROGRESS)
+  startedAt   DateTime      @default(now())
+  endedAt     DateTime?
+  durationSec Int?          // computed on session end
+
+  // Supabase Storage reference for the call audio
+  audioUrl    String?
+
+  transcript  TranscriptSegment[]
+  evaluation  EvaluationReport?
+
+  @@map("call_sessions")
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  ERROR
+}
+
+// _________________________________________
+// TRANSCRIPT SEGMENTS
+// Realtime API gives us speaker-separated audio chunks.
+// We store the transcribed text with timestamps.
+// _________________________________________
+
+model TranscriptSegment {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   CallSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  speaker   Speaker
+  text      String
+  startMs   Int         // ms offset from call start
+  endMs     Int
+  order     Int         // segment index for ordering
+
+  @@index([sessionId, order])
+  @@map("transcript_segments")
+}
+
+enum Speaker {
+  REP      // the human trainee
+  PROSPECT    // the AI persona
+}
+
+// _________________________________________
+// EVALUATION REPORTS
+// Generated by a separate evaluation prompt
+// (not the live AI actor) after the call ends.
+// _________________________________________
+
+model EvaluationReport {
+  id        String      @id @default(cuid())
+  sessionId String      @unique
+  session   CallSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+
+  overallScore          Float  // 0–100
+
+  // Rubric dimensions — tuned to SFU fundraising calls
+  rapportScore          Float  // did they personalize to the alum's background?
+  objectionsScore       Float  // how well did they handle pushback?
+  askScore              Float  // did they make a clear, confident ask?
+  listeningScore        Float  // did they adapt based on donor cues?
+
+  strengths             String[]
+  areasForImprovement   String[]
+  coachingTips          String[]  // concrete, actionable next steps
+  feedback              String    // narrative summary from the eval prompt
+
+  // Which persona + objections came up — useful for analytics
+  objectionsEncountered String[]
+  askMade               Boolean  @default(false)
+  askAccepted           Boolean?  // null if no ask was made
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("evaluation_reports")
+}
