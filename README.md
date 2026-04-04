@@ -153,6 +153,19 @@ npx prisma generate    # Generate Prisma Client
 npm run lint            # Run ESLint
 ```
 
+## Dependencies
+
+See [DEPENDENCIES.md](DEPENDENCIES.md) for a complete list of all runtime and development dependencies, including:
+
+- **React** (19.2.4) - UI framework
+- **Next.js** (16.2.2) - React framework with SSR
+- **Prisma** (6.19.3) - Database ORM
+- **Supabase** (2.101.1) - PostgreSQL database & auth
+- **Tailwind CSS** (4.2.2) - CSS framework
+- **TypeScript** (6.0.2) - Type safety
+
+Run `npm install` to install all dependencies listed in `package.json`.
+
 ## Database Schema
 
 ### Models
