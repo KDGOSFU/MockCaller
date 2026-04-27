@@ -97,9 +97,13 @@ MockCaller/
 │   ├── lib/              # Utility functions
 │   └── prompts/          # AI prompt templates
 ├── prisma/
-│   └── schema.prisma     # Database schema
+    └── migrations/       # Prisma SQL migrations history
+    └── schema.prisma     # Database schema
+    └── seed.ts           # Persona Seeding
 ├── public/               # Static assets
-├── .env.local            # Environment variables (local)
+    └── data/             # Persona Json files
+├── .env                  # Environment variables
+├── .env.local            #  (local)
 ├── next.config.js        # Next.js configuration
 ├── tsconfig.json         # TypeScript configuration
 ├── tailwind.config.ts    # Tailwind CSS configuration
