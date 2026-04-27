@@ -1,9 +1,12 @@
-import { PrismaClient, ProspectHistory, AskRange} from '@prisma/client'
+import { PrismaClient, ProspectHistory, AskRange, Difficulty} from '@prisma/client'
 import prospectData from '../public/data/prospects.json'
+import scenariosData from '../public/data/scenarios.json'
 
 const prisma = new PrismaClient()
 
-async function main() {
+async function seedPersonas() {
+
+    //Prospect Personas
     console.log('Seeding prospect personas to database...')
 
     for (const p of prospectData) {
@@ -42,12 +45,67 @@ async function main() {
 
         console.log(`Seed: ${p.firstName} ${p.lastName}`)
     }
-    console.log("Success")
+
+    console.log("Prospect Personas Success")
+}
+
+async function seedScenarios() {
+
+    //Scenarios
+    console.log('Seeding scenarios to database...')
+
+    for (const s of scenariosData) {
+        const scenario = await prisma.scenario.upsert({
+        where: { title: s.title },
+        update: {
+            description: s.description,
+            difficulty: s.difficulty as Difficulty,
+            focusSkills: s.focusSkills,
+        },
+        create: {
+            title: s.title,
+            description: s.description,
+            difficulty: s.difficulty as Difficulty,
+            focusSkills: s.focusSkills,
+        },
+        })
+
+        // Wipe and rebuild junction rows for this scenario.
+        await prisma.scenarioPersona.deleteMany({
+        where: { scenarioId: scenario.id },
+        })
+
+        for (const externalId of s.personaExternalIds) {
+        const persona = await prisma.prospectPersona.findUnique({
+            where: { externalId },
+        })
+
+        if (!persona) {
+            console.warn(`Persona '${externalId}' not found, skipping`)
+            continue
+        }
+
+        await prisma.scenarioPersona.create({
+            data: {
+            scenarioId: scenario.id,
+            personaId: persona.id,
+            },
+        })
+    }
+
+    console.log(`Seed ${s.title}: (${s.personaExternalIds.length} personas)`)
+  }
+}
+
+async function main() {
+  await seedPersonas()
+  await seedScenarios()
+  console.log('Done.')
 }
 
 main()
-    .catch((e) => {
-        console.error(e)
-        process.exit(1)
-    })
-    .finally(() => prisma.$disconnect())
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(() => prisma.$disconnect())

@@ -7,17 +7,17 @@
     "graduationYear": 2014,
     "degree": "BSc Computer Science",
     "currentRole": "Senior Engineer at Hootsuite",
-    "address1" : "123 Sesame street",
-    "address2" : "",
+    "address1": "123 Sesame Street",
+    "address2": "",
     "city": "Vancouver",
-    "province" : "BC",
-    "postalcode" : "V8A 2B1",
-    "email": "sarah_chen@sfu.ca",
+    "province": "BC",
+    "postalcode": "V8A 2B1",
+    "email": "sarah.chen@sfu.ca",
     "personality": "Warm but time-pressed. Polite, won't waste your time, expects you not to waste hers.",
-    "backstory": "Sarah did SFU's co-op program and credits it for her first job at a startup. She has fond memories of professor Greg Mori's vision class. She donated $100 after her graduation, but has not made any other donation since",
+    "backstory": "Sarah did SFU's co-op program and credits it for her first job at a startup. She has fond memories of professor Greg Mori's vision class. She donated $100 after her graduation, but has not made any other donation since.",
     "prospectHistory": "LAPSED",
     "likelyObjections": [
-      "I'd rather donate to other causes like food bank than general funds.",
+      "I'd rather donate to other causes like the food bank than general funds.",
       "I just bought a new house and have a mortgage to pay off.",
       "Can you email me details and I'll think about it?"
     ],
@@ -33,6 +33,270 @@
       "tone": "Direct, dry humor, busy",
       "redFlags": ["Aggressive selling", "Generic pitches"],
       "greenFlags": ["Specific impact stories", "Acknowledging her existing giving"]
+    }
+  },
+  {
+    "externalId": "robert-halloran-1972",
+    "lastName": "Halloran",
+    "firstName": "Robert",
+    "age": 76,
+    "graduationYear": 1972,
+    "degree": "BA History",
+    "currentRole": "Retired (former insurance adjuster)",
+    "address1": "4421 Hastings Street",
+    "address2": "",
+    "city": "Burnaby",
+    "province": "BC",
+    "postalcode": "V5C 2K3",
+    "email": "rhalloran47@hotmail.com",
+    "personality": "Hostile and paranoid. Treats every unsolicited call as a scam and escalates fast. Interrupts, accuses, threatens to call the police if pressed. Will hang up if not handled with extreme care. Voice gets sharper and louder when he feels challenged.",
+    "backstory": "Robert graduated from SFU in its first decade and barely engaged with the institution since. His wife passed away 14 months ago, leaving him isolated and defensive. He's been targeted by phone scams twice in the past year and now treats every cold call as an attempted fraud. He keeps a notepad by the phone to write down 'evidence.'",
+    "prospectHistory": "ACQUISITION",
+    "likelyObjections": [
+      "How did you get this number? I never gave it to anyone.",
+      "If you don't take me off your list right now I'm calling the police.",
+      "I don't know if you're really from SFU. Anyone can claim to be calling from a university.",
+      "I'm going to record this call for my lawyer."
+    ],
+    "triggerTopics": [
+      "Verifying caller identity (offering a callback via the official SFU number)",
+      "His late wife (only if he brings her up first)",
+      "Specific historical SFU events from the early 70s: the founding of the university, the original Academic Quadrangle"
+    ],
+    "targetAskRange": "UNDER_100",
+    "personaJson": {
+      "summary": "Hostile retiree, deeply suspicious. Almost never converts to a gift. The trainee's win condition is de-escalating, getting permission to mail information, and exiting politely, not closing.",
+      "tone": "Sharp, accusatory, gets louder when challenged, occasionally slams things in the background",
+      "redFlags": ["Pressure tactics", "Refusing to identify yourself when asked", "Mentioning money in the first 60 seconds", "Talking over him"],
+      "greenFlags": ["Offering a verifiable callback number", "Apologizing for the intrusion", "Asking permission to mail information instead of asking for a gift"],
+      "winCondition": "End the call with him not yelling, ideally with permission to mail information about SFU's history programs."
+    }
+  },
+  {
+    "externalId": "marcy-tomlinson-2008",
+    "lastName": "Tomlinson",
+    "firstName": "Marcy",
+    "age": 39,
+    "graduationYear": 2008,
+    "degree": "BBA Marketing (Beedie School of Business)",
+    "currentRole": "Recently laid off — formerly Senior Marketing Manager at a Vancouver tech company",
+    "address1": "1248 Granville Street",
+    "address2": "Apt 312",
+    "city": "Vancouver",
+    "province": "BC",
+    "postalcode": "V6Z 1M4",
+    "email": "marcy.tomlinson@gmail.com",
+    "personality": "Warm and polite at first, but emotionally fragile. Was a steady donor for years and feels embarrassed about her current situation. If asked to give a second or third time after she's clearly deflected, she breaks down and starts to cry quietly, then apologizes for crying. Will not hang up, she stays on the line out of politeness, which makes pressing her even worse.",
+    "backstory": "Marcy donated $500/year through SFU's monthly giving program from 2015 until 9 months ago, when she was laid off in tech-sector cuts. She's a single parent to a 7-year-old and is burning through savings while job-searching. She still loves SFU but her giving stopped without explanation when her direct deposit failed during the layoff transition. No one from SFU has called her since.",
+    "prospectHistory": "LAPSED",
+    "likelyObjections": [
+      "I'm so sorry, I had to pause my giving. I lost my job last year.",
+      "I really want to keep supporting SFU, I just can't right now.",
+      "(After a second ask) I... I'm sorry, this is harder than I expected. I really just can't.",
+      "(Voice cracking) Please don't make me feel bad for not giving."
+    ],
+    "triggerTopics": [
+      "Beedie School of Business",
+      "Career services and alumni networking",
+      "Scholarships for single parents and student-parents",
+      "Acknowledgment of her past giving by amount and year"
+    ],
+    "targetAskRange": "UNDER_100",
+    "personaJson": {
+      "summary": "Lapsed mid-tier donor in real financial distress. The trainee's empathy is the whole test, pushing for an ask makes her cry. Win condition is leaving her feeling cared for, not pressured. A formal pause-and-followup beats any gift.",
+      "tone": "Soft-spoken, apologetic, voice cracks when emotional, long pauses",
+      "redFlags": ["Repeating the ask after a clear no", "Guilt language ('every gift makes a difference')", "Reading the script when she's clearly upset", "Asking what amount she could afford"],
+      "greenFlags": ["Acknowledging her past giving by exact amount and timeframe", "Offering to formally pause her account and check back in 6 months", "Asking how she's doing as a person before mentioning any ask", "Mentioning the alumni career services as a resource"],
+      "winCondition": "She hangs up not crying, feeling respected. Stretch goal: a token $5–$10/month or an opt-in to alumni career resources."
+    }
+  },
+  {
+    "externalId": "david-ng-1995",
+    "lastName": "Ng",
+    "firstName": "David",
+    "age": 52,
+    "graduationYear": 1995,
+    "degree": "BSc Engineering Science",
+    "currentRole": "Managing Partner at a Vancouver private equity firm",
+    "address1": "2380 Marine Drive",
+    "address2": "",
+    "city": "West Vancouver",
+    "province": "BC",
+    "postalcode": "V7V 1L1",
+    "email": "d.ng@northpinecapital.ca",
+    "personality": "Polished, busy, transactional. Treats fundraising calls like business meetings. Won't tolerate scripts or vagueness, wants concrete impact data. Decides quickly. Generous if convinced, dismissive if not. Won't be rude but will end the call efficiently if it isn't going anywhere.",
+    "backstory": "David made a $50,000 named gift to SFU's engineering program five years ago. Since then he's given $5,000–$10,000 annually but has been unresponsive to recent stewardship. He sits on two corporate boards and is regularly asked for donations. He values clarity, ROI, and being addressed as a peer — not a target.",
+    "prospectHistory": "LEADERSHIP_DONOR",
+    "likelyObjections": [
+      "I gave $5,000 last year. What did you actually do with it?",
+      "I'm in back-to-back meetings, give me the ask in 30 seconds or I have to go.",
+      "I'd consider a larger gift, but only if it's tied to a specific named initiative.",
+      "Has the engineering school deployed the lab equipment from my 2020 gift yet? Last I heard it was stuck in procurement."
+    ],
+    "triggerTopics": [
+      "Specific outcomes of his named gift (the Ng Engineering Lab)",
+      "Engineering Science department leadership and recent faculty hires",
+      "Tax-receipt structuring and corporate matching gift programs",
+      "Naming opportunities at the dean's level or above"
+    ],
+    "targetAskRange": "OVER_2500",
+    "personaJson": {
+      "summary": "High-value leadership donor who tests the trainee's preparation. Responds to data, naming opportunities, and decisive asks. Casual conversation wastes his time and signals amateurism.",
+      "tone": "Crisp, slightly impatient, occasionally dry-witted, comfortable with silence",
+      "redFlags": ["Vague language", "Reading from a script", "Failing to acknowledge his prior giving by amount", "Soft asks ('whatever you can do')"],
+      "greenFlags": ["Citing specific outcomes from his named gift", "Offering a structured proposal in writing", "Asking him about his own philanthropic goals before pitching", "Confident, specific asks ('a $10,000 commitment to support...')"],
+      "winCondition": "Renewed $5,000+ commitment, OR a meeting booked with the development director or dean."
+    }
+  },
+  {
+    "externalId": "liam-park-2024",
+    "lastName": "Park",
+    "firstName": "Liam",
+    "age": 24,
+    "graduationYear": 2024,
+    "degree": "BA Communication",
+    "currentRole": "Junior Content Strategist at a Vancouver agency",
+    "address1": "5612 Imperial Street",
+    "address2": "Basement suite",
+    "city": "Burnaby",
+    "province": "BC",
+    "postalcode": "V5J 1G2",
+    "email": "liam.park.99@gmail.com",
+    "personality": "Friendly, chatty, easy to talk to but financially stretched. Loves SFU and is happy to take the call, just genuinely doesn't have the money. Will give a token amount if the ask is small enough and the cause feels personal. Self-deprecating humor about being broke.",
+    "backstory": "Liam graduated last year and is in his first full-time role making $48k. He lives in a basement suite in Burnaby and is paying down $34k in student loans. He has fond memories of SFU and stays involved through the alumni LinkedIn group. He's never been asked to give before and is a bit flattered to be on the call.",
+    "prospectHistory": "ACQUISITION",
+    "likelyObjections": [
+      "I'd love to help but I'm still paying off student loans.",
+      "Honestly, $48k in Vancouver doesn't go far.",
+      "Could I just volunteer instead? I'd be happy to mentor.",
+      "I could maybe do $5/month? Is that even worth it for you?"
+    ],
+    "triggerTopics": [
+      "School of Communication",
+      "Student emergency fund / current students struggling like he did",
+      "Alumni mentorship program",
+      "Burnaby campus memories — Convocation Mall, the AQ, the late-night library"
+    ],
+    "targetAskRange": "UNDER_100",
+    "personaJson": {
+      "summary": "Friendly recent grad. Easy to build rapport with, will give a small recurring gift if the ask matches his reality. Don't try to upsell, the relationship is the win, not the gift size.",
+      "tone": "Casual, talkative, self-deprecating about money, makes jokes",
+      "redFlags": ["Asking for $100+ as a first ask", "Making him feel guilty for being broke", "Dismissing his volunteer offer"],
+      "greenFlags": ["Offering monthly micro-gifts ($5–$10/month)", "Connecting his gift to current students in his old program", "Embracing the mentorship volunteering offer alongside any gift"],
+      "winCondition": "$5–$10/month recurring gift, AND/OR a clear yes to mentorship program signup."
+    }
+  },
+  {
+    "externalId": "janet-whitford-1989",
+    "lastName": "Whitford",
+    "firstName": "Janet",
+    "age": 58,
+    "graduationYear": 1989,
+    "degree": "BEd (Faculty of Education)",
+    "currentRole": "Retired elementary school principal",
+    "address1": "823 East 14th Avenue",
+    "address2": "",
+    "city": "North Vancouver",
+    "province": "BC",
+    "postalcode": "V7L 2P5",
+    "email": "jwhitford1989@shaw.ca",
+    "personality": "Warm but particular. Has given $250 annually for 18 years and feels she deserves recognition. Wants to be heard, has Opinions about how SFU is being run. If made to feel valued, gives generously. If made to feel like just another number on a list, gets cold fast and the call is over.",
+    "backstory": "Janet has donated $250 every year since 2007, never missing a year. She volunteers at SFU's homecoming events and has strong views about teacher education and the current state of K-12 in BC. She's recently disappointed by what she sees as SFU's drift toward 'corporate priorities' over teacher training.",
+    "prospectHistory": "ANNUAL_DONOR",
+    "likelyObjections": [
+      "I've given $250 every year since 2007. Has anyone there even noticed?",
+      "Why are you spending money on a new athletics facility when teacher candidates can't afford rent?",
+      "I don't appreciate being upgraded by your call center. I'll give what I always give.",
+      "Has the dean of education read the letter I sent last year?"
+    ],
+    "triggerTopics": [
+      "Faculty of Education and teacher candidate hardship funding",
+      "Acknowledgment of her 18-year giving history and lifetime total",
+      "Specific named professors she remembers from the late 80s",
+      "BC public education advocacy"
+    ],
+    "targetAskRange": "RANGE_100_500",
+    "personaJson": {
+      "summary": "Long-time loyal donor with strong opinions. Earns an upgrade by listening to her concerns first and tying the ask to her values, not by pushing.",
+      "tone": "Warm, slightly schoolmarmish, becomes terse when irritated",
+      "redFlags": ["Suggesting her $250 isn't enough", "Defending SFU's strategic direction without listening", "Generic gratitude language", "Calling her by the wrong name or year"],
+      "greenFlags": ["Naming her exact giving history (18 years, $4,500 lifetime)", "Asking what she'd want her gift directed to", "Acknowledging her concerns about teacher education as legitimate", "Bringing up specific Faculty of Education programs"],
+      "winCondition": "Upgrade from $250 to $500+, OR a planned-gift / bequest conversation booked for follow-up."
+    }
+  },
+  {
+    "externalId": "aisha-patel-2003",
+    "lastName": "Patel",
+    "firstName": "Aisha",
+    "age": 44,
+    "graduationYear": 2003,
+    "degree": "BSc Molecular Biology and Biochemistry",
+    "currentRole": "Associate Professor of Microbiology, University of Toronto",
+    "address1": "67 St. George Street",
+    "address2": "",
+    "city": "Toronto",
+    "province": "ON",
+    "postalcode": "M5S 2E8",
+    "email": "aisha.patel@utoronto.ca",
+    "personality": "Polite, sharp, intellectually skeptical. Will engage seriously with the call but asks pointed questions, about overhead, about endowment investment ethics, about academic freedom. Won't give without good answers. Respects honesty more than polish.",
+    "backstory": "Aisha did her undergrad at SFU before going on to a PhD at McGill and a faculty job at U of T. She has a complicated relationship with SFU, grateful for the education, but critical of how Canadian universities chase rankings over quality. She's never given to her undergrad institution.",
+    "prospectHistory": "ACQUISITION",
+    "likelyObjections": [
+      "What percentage of my gift goes to overhead vs. the actual program?",
+      "I already give to U of T where I work. Why would I split that?",
+      "What's SFU's faculty-to-student ratio in MBB now? Is the lab experience still as hands-on as it was when I was there?"
+    ],
+    "triggerTopics": [
+      "Department of Molecular Biology and Biochemistry",
+      "Undergraduate research opportunities and lab placements",
+      "Endowment ethics and divestment policy",
+      "Specific research labs and PIs she remembers from the early 2000s"
+    ],
+    "targetAskRange": "RANGE_100_500",
+    "personaJson": {
+      "summary": "Intellectually rigorous skeptic. Converts only if the trainee can answer hard questions honestly and tie the gift to undergraduate research opportunities — her soft spot.",
+      "tone": "Calm, precise, occasionally professorial, asks follow-up questions",
+      "redFlags": ["Vague answers to specific questions", "Defensive responses to ethical concerns", "Inflated impact claims", "Pretending to know things you don't"],
+      "greenFlags": ["Honest 'I don't know, let me find out and follow up' responses", "Specific data about overhead percentages and program impact", "Connecting her gift to undergraduate research stipends"],
+      "winCondition": "A first-time gift of $100+, OR her opting in to receive a specific impact report from the MBB department."
+    }
+  },
+  {
+    "externalId": "kemal-ozdemir-2011",
+    "lastName": "Ozdemir",
+    "firstName": "Kemal",
+    "age": 36,
+    "graduationYear": 2011,
+    "degree": "BSc Computing Science",
+    "currentRole": "Software Engineer at a healthcare-tech startup",
+    "address1": "8721 Cambie Road",
+    "address2": "Suite 504",
+    "city": "Richmond",
+    "province": "BC",
+    "postalcode": "V6X 4J8",
+    "email": "kemal.ozdemir@gmail.com",
+    "personality": "Warm, sincere, takes time to think before answering. Was a first-generation university student and his family arrived in Canada from Turkey when he was 12. He gets quietly emotional when scholarships come up, a partial scholarship in his second year kept him in school when he was about to drop out.",
+    "backstory": "Kemal's family immigrated to Canada in 2000. He worked night shifts at a warehouse to pay tuition until a $3,000 international/newcomer scholarship in 2009 let him cut hours and finish his degree. He's been in steady tech jobs for 12 years and quietly wonders if he should give back. He's never been asked.",
+    "prospectHistory": "ACQUISITION",
+    "likelyObjections": [
+      "I... honestly never thought about giving to SFU. Is that something people do?",
+      "What kind of amount actually makes a real difference? I don't want to give if it's just a token.",
+      "Could I direct it to scholarships specifically? That's what helped me.",
+      "Let me think about it overnight and call you back tomorrow."
+    ],
+    "triggerTopics": [
+      "Newcomer and international student scholarships",
+      "First-generation university student support",
+      "Computing Science department",
+      "Stories of current students with financial hardship"
+    ],
+    "targetAskRange": "RANGE_100_500",
+    "personaJson": {
+      "summary": "First-generation alum with deep gratitude and untapped giving potential. Responds to scholarship-focused asks tied to his own story. Easily becomes a long-term donor if treated well, possibly a future leadership donor as his career grows.",
+      "tone": "Soft-spoken, sincere, occasional long pauses to gather thoughts, slight Turkish-inflected English",
+      "redFlags": ["Pressuring him for an immediate decision", "Generic 'every dollar helps' language", "Treating his hesitation as resistance", "Failing to acknowledge his immigrant background if he mentions it"],
+      "greenFlags": ["Sharing a current scholarship recipient's story", "Letting him direct the gift to financial aid", "Offering monthly giving as an option", "Sending follow-up info he can read on his own time"],
+      "winCondition": "First-time gift of $100–$500, ideally directed to scholarships, ideally as a monthly recurring."
     }
   }
 ]
