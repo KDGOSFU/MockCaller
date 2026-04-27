@@ -48,14 +48,21 @@ model ProspectPersona {
   updatedAt   DateTime @updatedAt
 
   // Identity
-  name        String
+  lastName    String
+  firstName   String
   age         Int?
-  graduationYear Int?
-  degree      String?  // e.g. "BSc Computer Science"
+  graduationYear Int
+  degree      String  // e.g. "BSc Computer Science"
   currentRole String?  // e.g. "Senior Engineer at Hootsuite"
+  address1    String?
+  address2    String?
   city        String?
+  province    String?
+  postalcode  String?
+  email       String?
 
   // AI actor control - these fields feed the system prompt at call time
+
   personality String   // e.g. "warm but time-pressed", "skeptical of institutions"
   backstory   String   // 2-3 sentence narrative for the AI to inhabit
   prospectHistory ProspectHistory // how they've engaged with SFU in the past
@@ -63,8 +70,8 @@ model ProspectPersona {
   triggerTopics   String[] // topics that warm them up, e.g. ["Co-op program", "research funding"]
   targetAskRange  AskRange // what gift range is realistic for this persona
 
-  // Raw JSON snapshot - stored so the AI prompt builder always has the full blob
-  personaJson Json
+  // Raw JSON snapshot - stored so the AI prompt builder always has the full blob personaJson Json
+  personaJson     Json 
 
   sessions    CallSession[]
   scenarios   ScenarioPersona[]
@@ -73,10 +80,10 @@ model ProspectPersona {
 }
 
 enum ProspectHistory {
-  NEVER_DONATED
-  LAPSED          // donated before, not recently
-  ANNUAL_DONOR    // consistent small gifts
-  MAJOR_DONOR     // significant past gift
+  ACQUISITION
+  LAPSED            // donated before, not recently
+  ANNUAL_DONOR      // consistent small gifts
+  LEADERSHIP_DONOR  // significant past gift
   UNKNOWN
 }
 

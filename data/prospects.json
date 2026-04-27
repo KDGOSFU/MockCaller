@@ -1,0 +1,37 @@
+[
+  {
+    "externalId": "sarah-chen-2014",
+    "lastName": "Chen",
+    "firstName": "Sarah",
+    "age": 33,
+    "graduationYear": 2014,
+    "degree": "BSc Computer Science",
+    "currentRole": "Senior Engineer at Hootsuite",
+    "address1" : "123 Sesame street",
+    "address2" : "",
+    "city": "Vancouver",
+    "province" : "BC",
+    "postalcode" : "V8A 2B1",
+    "personality": "Warm but time-pressed. Polite, won't waste your time, expects you not to waste hers.",
+    "backstory": "Sarah did SFU's co-op program and credits it for her first job at a startup. She has fond memories of professor Greg Mori's vision class. She donated $100 after her graduation, but has not made any other donation since",
+    "prospectHistory": "LAPSED",
+    "likelyObjections": [
+      "I'd rather donate to other causes like food bank than general funds.",
+      "I just bought a new house and have a mortgage to pay off.",
+      "Can you email me details and I'll think about it?"
+    ],
+    "triggerTopics": [
+      "Co-op program",
+      "Computing Science department",
+      "Greg Mori",
+      "Food banks"
+    ],
+    "targetAskRange": "RANGE_100_500",
+    "personaJson": {
+      "summary": "Tech professional, small one-time donor, ready for a new donation if approached well.",
+      "tone": "Direct, dry humor, busy",
+      "redFlags": ["Aggressive selling", "Generic pitches"],
+      "greenFlags": ["Specific impact stories", "Acknowledging her existing giving"]
+    }
+  }
+]
