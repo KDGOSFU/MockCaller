@@ -1,0 +1,88 @@
+[
+  {
+    "title": "Cold Acquisition",
+    "description": "Calling alumni who have never donated before. Build rapport from scratch and lead toward a soft first ask.",
+    "difficulty": "INTERMEDIATE",
+    "focusSkills": [
+      "rapport building",
+      "objection handling",
+      "quality and successful completion of 3 asks",
+      "active listening",
+      "opening",
+      "soft first ask"
+    ],
+    "personaExternalIds": [
+      "liam-park-2024",
+      "kemal-ozdemir-2011",
+      "aisha-patel-2003",
+      "robert-halloran-1972"
+    ]
+  },
+  {
+    "title": "Lapsed Donors",
+    "description": "Calling alumni who used to give but have stopped. Re-engage with empathy and understand why they paused.",
+    "difficulty": "INTERMEDIATE",
+    "focusSkills": [
+      "rapport building",
+      "objection handling",
+      "quality and successful completion of 3 asks",
+      "active listening",
+      "empathy",
+      "win-back framing"
+    ],
+    "personaExternalIds": [
+      "sarah-chen-2014",
+      "marcy-tomlinson-2008"
+    ]
+  },
+  {
+    "title": "Donors",
+    "description": "Calling current annual donors to acknowledge their support and explore an upgrade.",
+    "difficulty": "BEGINNER",
+    "focusSkills": [
+      "rapport building",
+      "objection handling",
+      "quality and successful completion of 3 asks",
+      "active listening",
+      "stewardship",
+      "upgrade ask"
+    ],
+    "personaExternalIds": [
+      "janet-whitford-1989"
+    ]
+  },
+  {
+    "title": "Leadership Donors",
+    "description": "Engaging high-capacity leadership donors. Requires preparation, executive presence, and named-gift framing.",
+    "difficulty": "ADVANCED",
+    "focusSkills": [
+      "rapport building",
+      "objection handling",
+      "quality and successful completion of 3 asks",
+      "active listening",
+      "executive presence",
+      "naming-gift conversation"
+    ],
+    "personaExternalIds": [
+      "david-ng-1995"
+    ]
+  },
+  {
+    "title": "Difficult Calls",
+    "description": "Practice de-escalating hostile, distressed, or skeptical prospects. The win condition is often a graceful exit, not a gift.",
+    "difficulty": "ADVANCED",
+    "focusSkills": [
+      "rapport building",
+      "objection handling",
+      "quality and successful completion of 3 asks",
+      "active listening",
+      "de-escalation",
+      "graceful exit"
+    ],
+    "personaExternalIds": [
+      "robert-halloran-1972",
+      "marcy-tomlinson-2008",
+      "aisha-patel-2003"
+    ]
+  }
+]
