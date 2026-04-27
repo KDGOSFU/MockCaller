@@ -59,9 +59,15 @@ An advanced AI-powered platform for sales professionals to practice and improve 
 
 4. **Set up the database**
    ```bash
+   npx prisma db push
+   ```
+   This command creates the necessary tables in the PostgreSQL database based on the Prisma schema.
+
+4. **Load Database**
+   ```bash
    npx prisma db seed
    ```
-   This command creates the necessary tables in your PostgreSQL database based on the Prisma schema.
+   This command seeds json files and loads the PostgreSQL database.
 
 5. **Start the development server**
    ```bash
