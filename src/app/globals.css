@@ -1,8 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+@config '../../tailwind.config.ts';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import './login/login-shell.css';
+@import './mock-call/active/active-mock.css';
 
 html {
   scroll-behavior: smooth;
@@ -20,53 +21,4 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@layer components {
-  /* Login shell only — Clerk <SignIn /> unchanged: src/app/login/[[...sign-in]]/page.tsx */
-  .login-page {
-    position: relative;
-    display: flex;
-    min-height: 100vh;
-    flex-direction: column;
-    background: #f8fafc;
-    color: #0f172a;
-    font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
-  }
-
-  /* Top bar: mock-style position (absolute, centered) + primary italic title */
-  .login-page-topbar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1rem;
-    background: transparent;
-  }
-
-  .login-page-brand {
-    font-size: 1.5rem;
-    line-height: 2rem;
-    font-weight: 700;
-    font-style: italic;
-    color: #006699;
-  }
-
-  .login-page-center {
-    display: flex;
-    flex: 1 1 auto;
-    align-items: center;
-    justify-content: center;
-    padding: 6rem 1.5rem 8rem;
-    width: 100%;
-  }
-
-  .login-page-inner {
-    width: 100%;
-    max-width: 28rem;
-  }
 }
