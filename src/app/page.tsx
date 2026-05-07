@@ -1,13 +1,40 @@
+'use client'
+
+import { useState } from 'react'
+import { Sidebar } from '@/components/Sidebar'
+import { Topbar } from '@/components/Topbar'
+import {
+  activities,
+  callAnalysis,
+  scenarios,
+  strengths,
+  teamAccounts,
+  trainees,
+} from '@/data/mockData'
+import { CallAnalysisPage } from '@/views/CallAnalysisPage'
+import { CallScenariosPage } from '@/views/CallScenariosPage'
+import { DashboardPage } from '@/views/DashboardPage'
+import type { ViewKey } from '@/types'
+
 export default function Home() {
+  const [activeView, setActiveView] = useState<ViewKey>('overview')
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 h-screen w-full items-center justify-between font-mono text-sm lg:flex">
-        <div>
-          <h1 className="text-4xl font-bold">CallDrill</h1>
-          <p className="mt-4 text-xl">AI Fundraising Call Simulator</p>
-          <p className="mt-2 text-gray-600">Coming soon...</p>
-        </div>
-      </div>
+    <main className="app-shell">
+      <Sidebar activeView={activeView} onViewChange={setActiveView} />
+      <section className="workspace">
+        <Topbar />
+        {activeView === 'overview' ? (
+          <DashboardPage
+            activities={activities}
+            strengths={strengths}
+            teamAccounts={teamAccounts}
+            trainees={trainees}
+          />
+        ) : null}
+        {activeView === 'analysis' ? <CallAnalysisPage analysis={callAnalysis} /> : null}
+        {activeView === 'scenarios' ? <CallScenariosPage scenarios={scenarios} /> : null}
+      </section>
     </main>
   )
 }

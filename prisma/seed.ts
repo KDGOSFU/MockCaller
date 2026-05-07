@@ -1,5 +1,8 @@
-import { PrismaClient, ProspectHistory, AskRange} from '@prisma/client'
-import prospectData from '../data/prospects.json'
+import { PrismaClient } from '@prisma/client'
+import prospectData from '../public/data/prospects.json'
+
+type ProspectHistory = 'ACQUISITION' | 'LAPSED' | 'ANNUAL_DONOR' | 'LEADERSHIP_DONOR' | 'UNKNOWN'
+type AskRange = 'UNDER_100' | 'RANGE_100_500' | 'RANGE_500_2500' | 'OVER_2500'
 
 const prisma = new PrismaClient()
 
