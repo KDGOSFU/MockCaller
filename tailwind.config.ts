@@ -1,4 +1,5 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
+import { colors } from './src/lib/colors';
 
 const config: Config = {
   content: [
@@ -9,37 +10,51 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#006699',
-        'on-primary': '#ffffff',
-        'primary-container': '#e0f2fe',
-        'on-primary-container': '#001e30',
-        secondary: '#006a6a',
-        'on-secondary': '#ffffff',
-        'secondary-container': '#90efef',
-        'on-secondary-container': '#002020',
-        tertiary: '#713b00',
-        'tertiary-container': '#ffdcc3',
-        'on-tertiary-container': '#2f1500',
-        surface: '#f8fafc',
-        'on-surface': '#0f172a',
-        'surface-container': '#f1f5f9',
-        'surface-container-high': '#e2e8f0',
-        outline: '#94a3b8',
-        'outline-variant': '#cbd5e1',
-        error: '#b91c1c',
+        primary:                    colors.primary,
+        'primary-mid':              colors.primaryMid,
+        'on-primary':               colors.onPrimary,
+        'primary-container':        colors.primaryContainer,
+        'on-primary-container':     colors.onPrimaryContainer,
+
+        secondary:                  colors.secondary,
+        'on-secondary':             colors.onSecondary,
+        'secondary-container':      colors.secondaryContainer,
+        'on-secondary-container':   colors.onSecondaryContainer,
+
+        tertiary:                   colors.tertiary,
+        'tertiary-container':       colors.tertiaryContainer,
+        'on-tertiary-container':    colors.onTertiaryContainer,
+
+        surface:                    colors.surface,
+        'on-surface':               colors.onSurface,
+        'surface-container-lowest': colors.surfaceContainerLowest,
+        'surface-container-low':    colors.surfaceContainerLow,
+        'surface-container':        colors.surfaceContainer,
+        'surface-container-high':   colors.surfaceContainerHigh,
+        'surface-container-highest':colors.surfaceContainerHighest,
+
+        outline:                    colors.outline,
+        'outline-variant':          colors.outlineVariant,
+
+        error:                      colors.error,
       },
       fontFamily: {
         headline: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        body: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        label: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        body:     ['Inter',   'ui-sans-serif', 'system-ui', 'sans-serif'],
+        label:    ['Inter',   'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         DEFAULT: '8px',
-        lg: '12px',
-        xl: '16px',
+        md:      '0.75rem',
+        lg:      '12px',
+        xl:      '16px',
+      },
+      boxShadow: {
+        ambient: '0 20px 40px rgba(0, 30, 49, 0.06)',
       },
     },
   },
   plugins: [],
-}
-export default config
+};
+
+export default config;

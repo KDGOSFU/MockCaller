@@ -6,8 +6,8 @@
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-    background: #f8fafc;
-    color: #0f172a;
+    background: #f7f9fe; /* colors.surface */
+    color: #191c1f;      /* colors.onSurface */
     font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
   }
 
