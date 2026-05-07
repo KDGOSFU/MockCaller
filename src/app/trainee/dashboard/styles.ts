@@ -440,7 +440,7 @@ export const moduleBarTrackStyle: React.CSSProperties = {
   overflow:        'hidden',
 };
 
-export const moduleBarFillStyle = (pct: number, color = colors.primary): React.CSSProperties => ({
+export const moduleBarFillStyle = (pct: number, color: string = colors.primary): React.CSSProperties => ({
   width:        `${pct}%`,
   height:       '100%',
   backgroundColor: color,

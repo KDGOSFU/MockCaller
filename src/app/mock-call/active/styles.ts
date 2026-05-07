@@ -159,7 +159,7 @@ export const rowLabelStyle: React.CSSProperties = {
   color:    colors.outline,
 };
 
-export const rowValueStyle = (color = colors.onSurface): React.CSSProperties => ({
+export const rowValueStyle = (color: string = colors.onSurface): React.CSSProperties => ({
   fontSize:   '0.875rem',
   fontWeight: 600,
   color,
