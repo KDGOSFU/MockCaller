@@ -10,6 +10,9 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import OpenAI from 'openai'
+import { RTCPeerConnection } from 'wrtc';
+import { sessionManager } from "@/lib/webrtc/session-manager";
+import { auth } from '@clerk/nextjs/server';
 
 // initialize Prisma client for database queries
 const prisma = new PrismaClient()
@@ -24,6 +27,15 @@ export async function POST(req: Request){
 
     // extract persona and scenario IDs from input
     const { personaId, scenarioId } = body
+
+    const {userId} = await auth()
+
+    if (!userId) {
+        return NextResponse.json(
+            { error: 'User not authenticated' },
+            { status: 401 }
+        )
+    }
 
     // validate required Ids received
     if (!personaId || !scenarioId ) {
@@ -103,17 +115,53 @@ export async function POST(req: Request){
         input_audio_transcription: {model: 'whisper-1'} //enable audio transcription
     })
 
-    // extract ephemeral token from the session response for temporary access
+    // extract ephemeral token and openaiSessionId
     const ephemeral = completion.client_secret.value
+    const openaiSessionId = completion._request_id || null
+
     // generate unique ID to track this session on the client side
     // to do: change this so we can save the session to the database CallSessions.
     const sessionId = crypto.randomUUID()
+    const dbSessionId = crypto.randomUUID()
+
+    const peerConnection = new RTCPeerConnection({
+        iceServers: [
+            { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']}
+        ]
+    })
+
+    const offer = await peerConnection.createOffer()
+    await peerConnection.setLocalDescription(offer)
+
+    const callSession = await prisma.callSession.create({
+        data: {
+            id: dbSessionId,
+            userId,
+            realtimeSessionId: openaiSessionId,
+            personaId,
+            scenarioId,
+            status: "IN_PROGRESS",
+            startedAt: new Date(),
+        }
+    })
+
+    sessionManager.createSession(
+        sessionId,
+        dbSessionId,
+        peerConnection,
+        openaiSessionId,
+        ephemeral,
+        personaId,
+        scenarioId
+    )
 
     // return session details to client to establish connection
     return NextResponse.json({
         sessionId,
+        dbSessionId,
+        webrtcOffer: offer.sdp,
         clientSecret: ephemeral,
-        model:'gpt-4o-realtime-preview'
+        model: 'gpt-4o-realtime-preview'
     })
 
 }
