@@ -112,6 +112,21 @@ export const controlsBarStyle: React.CSSProperties = {
   gap:             '12px',
 };
 
+export const startCallBtnStyle: React.CSSProperties = {
+  display:      'inline-flex',
+  alignItems:   'center',
+  gap:          '10px',
+  padding:      '12px 32px',
+  borderRadius: '12px',
+  background:   `linear-gradient(135deg, ${colors.primary}, ${colors.primaryMid})`,
+  color:        '#ffffff',
+  fontSize:     '0.875rem',
+  fontWeight:   500,
+  border:       'none',
+  cursor:       'pointer',
+  fontFamily:   font.body,
+};
+
 export const muteBtnStyle: React.CSSProperties = {
   padding:         '12px 24px',
   gap:             '10px',
@@ -163,6 +178,8 @@ export const rowValueStyle = (color: string = colors.onSurface): React.CSSProper
   fontSize:   '0.875rem',
   fontWeight: 600,
   color,
+  textAlign:  'right',
+  flex:       1,
 });
 
 /* ── Contact card ───────────────────────────────────────────────── */
@@ -288,6 +305,124 @@ export const timerValueStyle: React.CSSProperties = {
   fontSize:          '1.5rem',
   color:             colors.primary,
   fontVariantNumeric: 'tabular-nums',
+};
+
+/* ── End call modal ─────────────────────────────────────────────── */
+export const modalOverlayStyle: React.CSSProperties = {
+  position:        'fixed',
+  inset:           0,
+  backgroundColor: 'rgba(0,20,40,0.45)',
+  backdropFilter:  'blur(4px)',
+  display:         'flex',
+  alignItems:      'center',
+  justifyContent:  'center',
+  zIndex:          50,
+};
+
+export const modalCardStyle: React.CSSProperties = {
+  backgroundColor: colors.surfaceContainerLowest,
+  borderRadius:    '20px',
+  padding:         '36px 40px',
+  width:           '360px',
+  boxShadow:       '0 24px 64px rgba(0,30,49,0.18)',
+  display:         'flex',
+  flexDirection:   'column',
+  alignItems:      'center',
+  gap:             '8px',
+  textAlign:       'center',
+};
+
+export const modalHeadingStyle: React.CSSProperties = {
+  fontFamily:  'Manrope, sans-serif',
+  fontWeight:  700,
+  fontSize:    '1.25rem',
+  color:       colors.onSurface,
+  marginTop:   '8px',
+};
+
+export const modalSubStyle: React.CSSProperties = {
+  fontSize:   '0.875rem',
+  color:      colors.outline,
+  lineHeight: 1.6,
+  marginBottom: '8px',
+};
+
+export const modalIconWrapStyle: React.CSSProperties = {
+  width:           '56px',
+  height:          '56px',
+  borderRadius:    '50%',
+  backgroundColor: '#fee2e2',
+  display:         'flex',
+  alignItems:      'center',
+  justifyContent:  'center',
+};
+
+export const modalActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  gap:     '12px',
+  width:   '100%',
+  marginTop: '8px',
+};
+
+export const modalCancelBtnStyle: React.CSSProperties = {
+  flex:            1,
+  padding:         '12px',
+  borderRadius:    '12px',
+  backgroundColor: colors.surfaceContainerLow,
+  color:           colors.onSurface,
+  fontSize:        '0.875rem',
+  fontWeight:      500,
+  border:          'none',
+  cursor:          'pointer',
+  fontFamily:      'Inter, ui-sans-serif, sans-serif',
+};
+
+export const modalConfirmBtnStyle: React.CSSProperties = {
+  flex:         1,
+  padding:      '12px',
+  borderRadius: '12px',
+  background:   'linear-gradient(135deg, #dc2626, #b91c1c)',
+  color:        '#ffffff',
+  fontSize:     '0.875rem',
+  fontWeight:   500,
+  border:       'none',
+  cursor:       'pointer',
+  fontFamily:   'Inter, ui-sans-serif, sans-serif',
+};
+
+/* ── Call ended state ───────────────────────────────────────────── */
+export const callEndedAvatarStyle: React.CSSProperties = {
+  width:           '144px',
+  height:          '144px',
+  backgroundColor: colors.surfaceContainerLow,
+  boxShadow:       '0 8px 32px rgba(0,30,49,0.08)',
+  borderRadius:    '50%',
+  display:         'flex',
+  alignItems:      'center',
+  justifyContent:  'center',
+};
+
+export const callEndedDurationStyle: React.CSSProperties = {
+  fontFamily:  'Manrope, sans-serif',
+  fontWeight:  700,
+  fontSize:    '1rem',
+  color:       colors.outline,
+  marginTop:   '4px',
+};
+
+export const returnBtnStyle: React.CSSProperties = {
+  display:      'inline-flex',
+  alignItems:   'center',
+  gap:          '10px',
+  padding:      '12px 32px',
+  borderRadius: '12px',
+  background:   `linear-gradient(135deg, ${colors.primary}, ${colors.primaryMid})`,
+  color:        '#ffffff',
+  fontSize:     '0.875rem',
+  fontWeight:   500,
+  border:       'none',
+  cursor:       'pointer',
+  fontFamily:   'Inter, ui-sans-serif, sans-serif',
 };
 
 /* ── Sound bar fill ─────────────────────────────────────────────── */

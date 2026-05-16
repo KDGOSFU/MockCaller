@@ -1,11 +1,34 @@
 'use client';
 
+/* ── Backend integration ────────────────────────────────────────────────── */
+
+import { useUser, useClerk } from '@clerk/nextjs';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
+
+/*───────────Router to start mock call───────────*/
+
+import { useRouter } from 'next/navigation';
+
+/* ── Scenarios from DB ────────────────────────────────────────────────── */
+
+type Scenario = {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  focusSkills: string[];
+};
+
+/* ── Icons from React ────────────────────────────────────────────────── */
 import {
   LayoutDashboard, Phone, BarChart2, BookOpen,
   Bell, Settings, HelpCircle, LogOut, Sparkles,
-  Star, CheckCircle2, Lock, Bot, ChevronRight,
-  CircleDot, User,
+  CheckCircle2, Lock, Bot, ChevronRight, User,
 } from 'lucide-react';
+
+/* ── Styles ────────────────────────────────────────────────── */
 import {
   colors,
   pageStyle, sidebarStyle, logoAreaStyle, logoIconStyle, logoNameStyle, logoSubStyle,
@@ -15,9 +38,9 @@ import {
   progressCardStyle, progressLabelStyle, progressValueStyle,
   progressBarTrackStyle, progressBarFillStyle, progressModulesStyle,
   statsGridStyle, statCardStyle, statLabelStyle, statValueStyle, statSubStyle,
-  bottomGridStyle, sectionHeadingStyle, viewAllStyle,
+  bottomGridStyle, sectionHeadingStyle,
   sessionCardStyle, sessionIconStyle, sessionTitleStyle, sessionMetaStyle,
-  sessionStatsStyle, badgeStyle,
+  difficultyBadgeStyle,
   moduleItemStyle, moduleRowStyle, moduleNameStyle,
   moduleBarTrackStyle, moduleBarFillStyle,
   inProgressBadgeStyle, nextBadgeStyle,
@@ -32,22 +55,6 @@ const NAV_ITEMS = [
   { label: 'Training Library', icon: BookOpen,        active: false },
 ];
 
-const SESSIONS = [
-  {
-    title:      'The Hesitant Philanthropist',
-    meta:       'Completed 2 hours ago • Duration: 14:22',
-    grade:      'A',
-    conversion: true,
-    badge:      'gold' as const,
-  },
-  {
-    title:      'Budget-Conscious Corporate Lead',
-    meta:       'Completed Yesterday • Duration: 08:40',
-    grade:      'B+',
-    conversion: false,
-    badge:      'review' as const,
-  },
-];
 
 const MODULES = [
   { name: 'Building Genuine Rapport',    status: 'done',        pct: 100 },
@@ -58,6 +65,7 @@ const MODULES = [
 
 /* ── Sidebar ─────────────────────────────────────────────────────── */
 function Sidebar() {
+  const { signOut } = useClerk();
   return (
     <aside style={sidebarStyle}>
       {/* Logo */}
@@ -65,8 +73,8 @@ function Sidebar() {
         <div style={logoIconStyle}>
           <Phone size={18} color="#ffffff" />
         </div>
-        <p style={logoNameStyle}>Fundraiser Pro</p>
-        <p style={logoSubStyle}>Lumina Academy</p>
+        <p style={logoNameStyle}>MockCaller</p>
+        <p style={logoSubStyle}>Fundraising Academy</p>
       </div>
 
       {/* Nav */}
@@ -85,7 +93,7 @@ function Sidebar() {
         <button style={sidebarLinkStyle}>
           <HelpCircle size={17} /> Help Center
         </button>
-        <button style={sidebarLinkStyle}>
+        <button style={sidebarLinkStyle} onClick={() => signOut({ redirectUrl: '/login' })}>
           <LogOut size={17} /> Sign Out
         </button>
       </div>
@@ -95,6 +103,8 @@ function Sidebar() {
 
 /* ── Top bar ─────────────────────────────────────────────────────── */
 function TopBar() {
+  const { user } = useUser();
+  const displayName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || 'Trainee' : 'Trainee';
   return (
     <header style={topBarStyle}>
       <span style={topBarTitleStyle}>Trainee Overview</span>
@@ -104,10 +114,10 @@ function TopBar() {
         <div style={userChipStyle}>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontSize: '0.85rem', fontWeight: 600, color: colors.onSurface, lineHeight: 1.2 }}>
-              Alex Thompson
+              {displayName}
             </p>
             <p style={{ fontSize: '0.65rem', fontWeight: 600, color: colors.outline, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-              Level 2 Trainee
+              Trainee
             </p>
           </div>
           <div style={userAvatarStyle}>
@@ -136,36 +146,6 @@ function ProgressCard() {
   );
 }
 
-/* ── Session card ────────────────────────────────────────────────── */
-function SessionCard({ session, alt }: { session: typeof SESSIONS[0]; alt: boolean }) {
-  return (
-    <div style={sessionCardStyle(alt)}>
-      <div style={sessionIconStyle}>
-        <Phone size={18} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={sessionTitleStyle}>{session.title}</p>
-        <p style={sessionMetaStyle}>{session.meta}</p>
-        <div style={sessionStatsStyle}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Star size={12} color={colors.tertiary} />
-            Grade: {session.grade}
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <CircleDot size={12} color={colors.outline} />
-            Conversion: {session.conversion ? 'Yes' : 'No'}
-          </span>
-        </div>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
-        <span style={badgeStyle(session.badge)}>
-          {session.badge === 'gold' ? 'Gold Standard' : 'Needs Review'}
-        </span>
-        <ChevronRight size={18} color={colors.outline} />
-      </div>
-    </div>
-  );
-}
 
 /* ── Module item ─────────────────────────────────────────────────── */
 function ModuleItem({ mod }: { mod: typeof MODULES[0] }) {
@@ -199,6 +179,29 @@ function ModuleItem({ mod }: { mod: typeof MODULES[0] }) {
 
 /* ── Page ───────────────────────────────────────────────────────── */
 export default function TraineeDashboardPage() {
+  const router = useRouter();
+  const { user } = useUser();
+  const firstName = user?.firstName ?? 'there';
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [loadingScenarios, setLoadingScenarios] = useState(true);
+  const [scenarioError, setScenarioError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('scenarios')
+      .select('*')
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Supabase error:', error);
+          setScenarioError(error.message);
+        } else {
+          setScenarios(data ?? []);
+        }
+        setLoadingScenarios(false);
+      });
+  }, []);
+
   return (
     <div style={pageStyle}>
       <Sidebar />
@@ -211,7 +214,7 @@ export default function TraineeDashboardPage() {
           {/* Hero + Progress */}
           <div style={heroGridStyle}>
             <div>
-              <h1 style={heroHeadingStyle}>Welcome back, Alex.</h1>
+              <h1 style={heroHeadingStyle}>Welcome back, {firstName}.</h1>
               <p style={heroSubStyle}>Your next milestone is near.</p>
               <p style={heroBodyStyle}>
                 You&apos;ve completed 75% of the &ldquo;High-Net-Worth Engagement&rdquo; track.
@@ -252,14 +255,38 @@ export default function TraineeDashboardPage() {
           {/* Recent sessions + Assigned modules */}
           <div style={bottomGridStyle}>
 
-            {/* Recent sessions */}
+            {/* Mock Scenarios sessions */}
             <div>
               <div style={sectionHeadingStyle}>
-                Recent Training Sessions
-                <button style={viewAllStyle}>View All History</button>
+                Call Scenarios
               </div>
-              {SESSIONS.map((s, i) => (
-                <SessionCard key={s.title} session={s} alt={i % 2 !== 0} />
+              {loadingScenarios && (
+                <p style={sessionMetaStyle}>Loading scenarios...</p>
+              )}
+              {scenarioError && (
+                <p style={{ ...sessionMetaStyle, color: 'red' }}>Error: {scenarioError}</p>
+              )}
+              {!loadingScenarios && !scenarioError && scenarios.length === 0 && (
+                <p style={sessionMetaStyle}>No scenarios found. Check Supabase RLS permissions.</p>
+              )}
+              {scenarios.map((scenario, i) => (
+                  <div key={scenario.id}
+                       style={sessionCardStyle(i % 2 !== 0)}
+                       onClick={() => router.push(`/mock-call/active?scenarioId=${scenario.id}`)}>
+                    <div style={sessionIconStyle}>
+                      <Phone size={18} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={sessionTitleStyle}>{scenario.title}</p>
+                      <p style={sessionMetaStyle}>{scenario.description}</p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
+                      <span style={difficultyBadgeStyle(scenario.difficulty)}>
+                        {scenario.difficulty}
+                      </span>
+                      <ChevronRight size={18} color={colors.outline} />
+                    </div>
+                  </div>
               ))}
             </div>
 
