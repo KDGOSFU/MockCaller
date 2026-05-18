@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { useUser } from '@clerk/nextjs';
 import { createClient } from '@/utils/supabase/client';
 import { Settings, BarChart2, Mic, MicOff, PhoneOff, MapPin, User, Clock, CheckCircle2 } from 'lucide-react';
 import {
@@ -20,7 +21,6 @@ import {
   tonalDividerStyle, pastGiftsLabelStyle,
   giftAmountStyle, giftLabelStyle, giftDateStyle,
   timerCardStyle, timerLabelStyle, timerSubLabelStyle, timerValueStyle,
-  soundBarStyle,
 } from './styles';
 
 /* ── Scenario type ───────────────────────────────────────────────── */
@@ -55,20 +55,11 @@ const PAST_GIFTS = [
 ];
 
 
-const BAR_HEIGHTS = [10, 16, 12, 18, 10];
-const BAR_DELAYS  = [0, 0.15, 0.3, 0.15, 0];
-
 /* ── Sub-components ─────────────────────────────────────────────── */
-function SoundBars() {
+function SoundBars({ heights }: { heights: number[] }) {
   return (
     <>
       <style>{`
-        @keyframes sound-bar {
-          0%, 100% { transform: scaleY(0.35); }
-          50%       { transform: scaleY(1);    }
-        }
-        .sound-bar { transform-origin: bottom; }
-
         @keyframes ring-outer {
           0%, 100% { transform: scale(0.9);  opacity: 0.3; }
           50%       { transform: scale(1.08); opacity: 0.6; }
@@ -78,9 +69,15 @@ function SoundBars() {
           50%       { transform: scale(1.05); opacity: 0.5; }
         }
       `}</style>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 20 }}>
-        {BAR_HEIGHTS.map((h, i) => (
-          <div key={i} className="sound-bar rounded-full" style={soundBarStyle(h, BAR_DELAYS[i])} />
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 32 }}>
+        {heights.map((h, i) => (
+          <div key={i} style={{
+            width:           6,
+            height:          Math.max(4, h),
+            backgroundColor: colors.primary,
+            borderRadius:    3,
+            transition:      'height 0.08s ease',
+          }} />
         ))}
       </div>
     </>
@@ -89,9 +86,11 @@ function SoundBars() {
 
 
 /* ── Page ───────────────────────────────────────────────────────── */
-export default function ActiveCallPage() {
-  const searchParams = useSearchParams();
-  const scenarioId = searchParams.get('scenarioId');
+function ActiveCallContent() {
+  const searchParams      = useSearchParams();
+  const scenarioId        = searchParams.get('scenarioId');
+  const excludePersonaIds = new Set((searchParams.get('excludePersonaIds') ?? '').split(',').filter(Boolean));
+  const { user } = useUser();
 
   const [scenario, setScenario] = useState<Scenario | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -100,6 +99,65 @@ export default function ActiveCallPage() {
   const [showEndModal, setShowEndModal] = useState(false);
   const [ended, setEnded] = useState(false);
   const [prospect, setProspect] = useState<Prospect | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [barHeights, setBarHeights] = useState<number[]>([4, 4, 4, 4, 4]);
+
+  /* ── Audio refs ── */
+  const audioCtxRef  = useRef<AudioContext | null>(null);
+  const analyserRef  = useRef<AnalyserNode | null>(null);
+  const streamRef    = useRef<MediaStream | null>(null);
+  const animFrameRef = useRef<number | null>(null);
+
+  async function startMicrophone() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      streamRef.current = stream;
+
+      const ctx      = new AudioContext();
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+      const source   = ctx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      audioCtxRef.current = ctx;
+      analyserRef.current = analyser;
+
+      const data = new Uint8Array(analyser.fftSize);
+
+      // Small per-bar offsets so bars don't move in lockstep
+      const offsets = [1.0, 0.75, 1.15, 0.85, 1.05];
+
+      function tick() {
+        analyser.getByteTimeDomainData(data); // waveform: 0–255, silence = 128
+
+        // RMS volume
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const v = (data[i] - 128) / 128;
+          sum += v * v;
+        }
+        const rms    = Math.sqrt(sum / data.length);
+        const volume = rms * 180; // scale to ~px height
+
+        setBarHeights(offsets.map(o => volume * o));
+        animFrameRef.current = requestAnimationFrame(tick);
+      }
+      tick();
+    } catch (err) {
+      console.error('Microphone access denied:', err);
+    }
+  }
+
+  function stopMicrophone() {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    analyserRef.current?.disconnect();
+    audioCtxRef.current?.close();
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    setBarHeights([4, 4, 4, 4, 4]);
+  }
+
+  // Clean up on unmount
+  useEffect(() => () => stopMicrophone(), []);
 
   useEffect(() => {
     if (!scenarioId) return;
@@ -123,19 +181,25 @@ export default function ActiveCallPage() {
       .from('scenario_personas')
       .select('personaId')
       .eq('scenarioId', scenarioId)
-      .limit(1)
       .then(({ data, error }) => {
-        if (error || !data) return console.error(error);
-  
+        if (error || !data || data.length === 0) return console.error(error);
+
+        // Filter out already-completed personas, fall back to all if somehow all excluded
+        const available = data.filter(r => !excludePersonaIds.has(r.personaId));
+        const pool = available.length > 0 ? available : data;
+
+        // Pick a random persona from the remaining pool
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        const personaId = pool[randomIndex].personaId;
+
         supabase
           .from('prospect_personas')
           .select('*')
-          .eq('id', data[0].personaId)
+          .eq('id', personaId)
           .single()
           .then(({ data: p, error: pErr }) => {
             if (pErr) return console.error(pErr);
             setProspect(p);
-            console.log(p); // 👈 confirm it's loading
           });
       });
   }, [scenarioId]);
@@ -159,9 +223,54 @@ export default function ActiveCallPage() {
     return () => clearInterval(id);
   }, [started, ended]);
 
-  function confirmEnd() {
+  async function startCall() {
+    setStarted(true);
+    startMicrophone();
+    if (!user || !scenarioId || !prospect) return;
+
+    const supabase = createClient();
+
+    // Upsert trainee into users table (required by FK)
+    await supabase.from('users').upsert({
+      id:        user.id,
+      email:     user.emailAddresses[0]?.emailAddress ?? '',
+      name:      `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || null,
+      updatedAt: new Date().toISOString(),
+    }, { onConflict: 'id' });
+
+    // Create the call session
+    const newId = crypto.randomUUID();
+    const { error } = await supabase.from('call_sessions').insert({
+      id:         newId,
+      userId:     user.id,
+      scenarioId,
+      personaId:  prospect.id,
+      status:     'IN_PROGRESS',
+      startedAt:  new Date().toISOString(),
+    });
+
+    if (error) console.error('Failed to create call session:', error);
+    else setSessionId(newId);
+  }
+
+  async function confirmEnd() {
     setShowEndModal(false);
     setEnded(true);
+    stopMicrophone();
+
+    if (sessionId) {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('call_sessions')
+        .update({
+          status:      'COMPLETED',
+          endedAt:     new Date().toISOString(),
+          durationSec: elapsed,
+        })
+        .eq('id', sessionId);
+
+      if (error) console.error('Failed to complete call session:', error);
+    }
   }
 
   const fmt = (s: number) =>
@@ -198,7 +307,7 @@ export default function ActiveCallPage() {
                   <p style={captionSubStyle}>Review the scenario brief on the right, then start when you&apos;re prepared.</p>
                 </div>
                 <button
-                  onClick={() => setStarted(true)}
+                  onClick={startCall}
                   className="flex items-center"
                   style={startCallBtnStyle}
                 >
@@ -239,7 +348,7 @@ export default function ActiveCallPage() {
                   <div className="absolute" style={{ ...avatarMidStyle,  animation: 'ring-mid 3s ease-in-out infinite', animationDelay: '0.75s' }} />
                   <div className="relative flex flex-col items-center justify-center gap-2" style={avatarInnerStyle}>
                     <User size={56} color={colors.primary} />
-                    <SoundBars />
+                    <SoundBars heights={barHeights} />
                   </div>
                 </div>
 
@@ -257,7 +366,10 @@ export default function ActiveCallPage() {
           {/* Controls — only shown during active call */}
           {started && !ended && (
             <div className="flex items-center justify-center" style={controlsBarStyle}>
-              <button onClick={() => setIsMuted(m => !m)} className="flex items-center" style={{ ...muteBtnStyle, ...(isMuted && { backgroundColor: '#dc2626', color: '#ffffff' }) }}>
+              <button onClick={() => {
+                streamRef.current?.getAudioTracks().forEach(t => { t.enabled = isMuted; });
+                setIsMuted(m => !m);
+              }} className="flex items-center" style={{ ...muteBtnStyle, ...(isMuted && { backgroundColor: '#dc2626', color: '#ffffff' }) }}>
                 {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
                 {isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
               </button>
@@ -368,5 +480,13 @@ export default function ActiveCallPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ActiveCallPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading…</div>}>
+      <ActiveCallContent />
+    </Suspense>
   );
 }

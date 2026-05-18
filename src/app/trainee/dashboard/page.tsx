@@ -185,6 +185,8 @@ export default function TraineeDashboardPage() {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [loadingScenarios, setLoadingScenarios] = useState(true);
   const [scenarioError, setScenarioError] = useState<string | null>(null);
+  const [completedPersonasByScenario, setCompletedPersonasByScenario] = useState<Map<string, Set<string>>>(new Map());
+  const [totalPersonasByScenario, setTotalPersonasByScenario]         = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     const supabase = createClient();
@@ -201,6 +203,40 @@ export default function TraineeDashboardPage() {
         setLoadingScenarios(false);
       });
   }, []);
+
+  // Fetch total personas per scenario
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('scenario_personas')
+      .select('scenarioId, personaId')
+      .then(({ data }) => {
+        if (!data) return;
+        const totals = new Map<string, number>();
+        data.forEach(r => totals.set(r.scenarioId, (totals.get(r.scenarioId) ?? 0) + 1));
+        setTotalPersonasByScenario(totals);
+      });
+  }, []);
+
+  // Fetch completed sessions for this user
+  useEffect(() => {
+    if (!user?.id) return;
+    const supabase = createClient();
+    supabase
+      .from('call_sessions')
+      .select('scenarioId, personaId')
+      .eq('userId', user.id)
+      .eq('status', 'COMPLETED')
+      .then(({ data }) => {
+        if (!data) return;
+        const byScenario = new Map<string, Set<string>>();
+        data.forEach(r => {
+          if (!byScenario.has(r.scenarioId)) byScenario.set(r.scenarioId, new Set());
+          byScenario.get(r.scenarioId)!.add(r.personaId);
+        });
+        setCompletedPersonasByScenario(byScenario);
+      });
+  }, [user?.id]);
 
   return (
     <div style={pageStyle}>
@@ -269,12 +305,27 @@ export default function TraineeDashboardPage() {
               {!loadingScenarios && !scenarioError && scenarios.length === 0 && (
                 <p style={sessionMetaStyle}>No scenarios found. Check Supabase RLS permissions.</p>
               )}
-              {scenarios.map((scenario, i) => (
+              {scenarios.map((scenario, i) => {
+                const donePersonas  = completedPersonasByScenario.get(scenario.id)?.size ?? 0;
+                const totalPersonas = totalPersonasByScenario.get(scenario.id) ?? 0;
+                const isCompleted   = donePersonas > 0;
+                const allDone       = totalPersonas > 0 && donePersonas >= totalPersonas;
+
+                return (
                   <div key={scenario.id}
-                       style={sessionCardStyle(i % 2 !== 0)}
-                       onClick={() => router.push(`/mock-call/active?scenarioId=${scenario.id}`)}>
-                    <div style={sessionIconStyle}>
-                      <Phone size={18} />
+                       style={{
+                         ...sessionCardStyle(i % 2 !== 0),
+                         ...(allDone && { opacity: 0.6, cursor: 'default' }),
+                       }}
+                       onClick={() => {
+                         if (allDone) return;
+                         const doneIds = [...(completedPersonasByScenario.get(scenario.id) ?? [])];
+                         const params = new URLSearchParams({ scenarioId: scenario.id });
+                         if (doneIds.length > 0) params.set('excludePersonaIds', doneIds.join(','));
+                         router.push(`/call?${params.toString()}`);
+                       }}>
+                    <div style={{ ...sessionIconStyle, ...(isCompleted && { backgroundColor: '#d1fae5', color: '#065f46' }) }}>
+                      {isCompleted ? <CheckCircle2 size={18} /> : <Phone size={18} />}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={sessionTitleStyle}>{scenario.title}</p>
@@ -284,10 +335,16 @@ export default function TraineeDashboardPage() {
                       <span style={difficultyBadgeStyle(scenario.difficulty)}>
                         {scenario.difficulty}
                       </span>
-                      <ChevronRight size={18} color={colors.outline} />
+                      <span style={{
+                        fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em',
+                        color: allDone ? '#065f46' : isCompleted ? colors.primary : colors.outline,
+                      }}>
+                        {allDone ? 'COMPLETED' : `${donePersonas}/${totalPersonas}`}
+                      </span>
                     </div>
                   </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Assigned modules */}
