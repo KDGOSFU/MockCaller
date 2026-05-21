@@ -130,18 +130,19 @@ function TopBar() {
 }
 
 /* ── Progress card ───────────────────────────────────────────────── */
-function ProgressCard() {
+function ProgressCard({ completed, total }: { completed: number; total: number }) {
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   return (
     <div style={progressCardStyle}>
       <p style={progressLabelStyle}>Current Progress</p>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p style={progressValueStyle}>75%</p>
+        <p style={progressValueStyle}>{pct}%</p>
         <Sparkles size={22} color={colors.primaryMid} />
       </div>
       <div style={progressBarTrackStyle}>
-        <div style={progressBarFillStyle(75)} />
+        <div style={progressBarFillStyle(pct)} />
       </div>
-      <p style={progressModulesStyle}>12 of 16 modules completed</p>
+      <p style={progressModulesStyle}>{completed} of {total} personas completed</p>
     </div>
   );
 }
@@ -187,6 +188,7 @@ export default function TraineeDashboardPage() {
   const [scenarioError, setScenarioError] = useState<string | null>(null);
   const [completedPersonasByScenario, setCompletedPersonasByScenario] = useState<Map<string, Set<string>>>(new Map());
   const [totalPersonasByScenario, setTotalPersonasByScenario]         = useState<Map<string, number>>(new Map());
+  const [callStats, setCallStats] = useState({ total: 0, today: 0, avgDuration: 0 });
 
   useEffect(() => {
     const supabase = createClient();
@@ -198,7 +200,8 @@ export default function TraineeDashboardPage() {
           console.error('Supabase error:', error);
           setScenarioError(error.message);
         } else {
-          setScenarios(data ?? []);
+          const order: Record<string, number> = { BEGINNER: 0, beginner: 0, INTERMEDIATE: 1, intermediate: 1, ADVANCED: 2, advanced: 2 };
+          setScenarios((data ?? []).sort((a, b) => (order[a.difficulty] ?? 99) - (order[b.difficulty] ?? 99)));
         }
         setLoadingScenarios(false);
       });
@@ -224,19 +227,56 @@ export default function TraineeDashboardPage() {
     const supabase = createClient();
     supabase
       .from('call_sessions')
-      .select('scenarioId, personaId')
+      .select('scenarioId, personaId, startedAt, durationSec')
       .eq('userId', user.id)
       .eq('status', 'COMPLETED')
       .then(({ data }) => {
         if (!data) return;
+
+        // Scenario completion map
         const byScenario = new Map<string, Set<string>>();
         data.forEach(r => {
           if (!byScenario.has(r.scenarioId)) byScenario.set(r.scenarioId, new Set());
           byScenario.get(r.scenarioId)!.add(r.personaId);
         });
         setCompletedPersonasByScenario(byScenario);
+
+        // Call stats
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayCount = data.filter(r => new Date(r.startedAt) >= todayStart).length;
+
+        // Average duration — only count sessions with a meaningful duration (> 0)
+        const withDuration = data.filter(r => r.durationSec != null && r.durationSec > 0);
+        const avgDuration  = withDuration.length > 0
+          ? Math.round(withDuration.reduce((sum, r) => sum + r.durationSec, 0) / withDuration.length)
+          : 0;
+
+        setCallStats({ total: data.length, today: todayCount, avgDuration });
       });
   }, [user?.id]);
+
+  const DIFFICULTY_ORDER: Record<string, number> = {
+    beginner: 0, BEGINNER: 0,
+    intermediate: 1, INTERMEDIATE: 1,
+    advanced: 2, ADVANCED: 2,
+  };
+
+  const nextScenario = scenarios
+    .filter(s => {
+      const total = totalPersonasByScenario.get(s.id) ?? 0;
+      const done  = completedPersonasByScenario.get(s.id)?.size ?? 0;
+      return done < total;
+    })
+    .sort((a, b) => (DIFFICULTY_ORDER[a.difficulty] ?? 99) - (DIFFICULTY_ORDER[b.difficulty] ?? 99))[0] ?? null;
+
+  function goToNextCall() {
+    if (!nextScenario) return;
+    const doneIds = [...(completedPersonasByScenario.get(nextScenario.id) ?? [])];
+    const params  = new URLSearchParams({ scenarioId: nextScenario.id });
+    if (doneIds.length > 0) params.set('excludePersonaIds', doneIds.join(','));
+    router.push(`/call?${params.toString()}`);
+  }
 
   return (
     <div style={pageStyle}>
@@ -257,11 +297,18 @@ export default function TraineeDashboardPage() {
                 Focusing on the &lsquo;Closing Ask&rsquo; module will boost your conversion
                 performance by an estimated 12%.
               </p>
-              <button style={heroCTAStyle}>
-                Start Next Lesson: The Art of the Ask
+              <button
+                style={{ ...heroCTAStyle, ...(!nextScenario && { opacity: 0.5, cursor: 'default' }) }}
+                onClick={goToNextCall}
+                disabled={!nextScenario}
+              >
+                {nextScenario ? `Start Next Call: ${nextScenario.title}` : 'All Scenarios Completed!'}
               </button>
             </div>
-            <ProgressCard />
+            <ProgressCard
+              completed={[...completedPersonasByScenario.values()].reduce((sum, s) => sum + s.size, 0)}
+              total={[...totalPersonasByScenario.values()].reduce((sum, n) => sum + n, 0)}
+            />
           </div>
 
           {/* Stats row */}
@@ -269,22 +316,28 @@ export default function TraineeDashboardPage() {
             <div style={statCardStyle}>
               <p style={statLabelStyle}>Average Duration</p>
               <div style={statValueStyle}>
-                12:45
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: colors.tertiary }}>
-                  — Steady
-                </span>
+                {callStats.avgDuration > 0
+                  ? `${String(Math.floor(callStats.avgDuration / 60)).padStart(2, '0')}:${String(callStats.avgDuration % 60).padStart(2, '0')}`
+                  : '—'}
+                {callStats.avgDuration > 0 && (
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: callStats.avgDuration >= 600 && callStats.avgDuration <= 900 ? colors.secondary : colors.tertiary }}>
+                    {callStats.avgDuration < 600 ? '— Too short' : callStats.avgDuration <= 900 ? '— On target' : '— Too long'}
+                  </span>
+                )}
               </div>
               <p style={statSubStyle}>Optimal range: 10–15m</p>
             </div>
             <div style={statCardStyle}>
               <p style={statLabelStyle}>Mock Calls</p>
               <div style={statValueStyle}>
-                24
+                {callStats.total}
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: colors.secondary }}>
-                  +3 today
+                  {callStats.today > 0 ? `+${callStats.today} today` : 'none today'}
                 </span>
               </div>
-              <p style={statSubStyle}>Goal: 50 for certification</p>
+              <p style={statSubStyle}>
+                Goal: {[...totalPersonasByScenario.values()].reduce((sum, n) => sum + n, 0)} calls to complete all
+              </p>
             </div>
           </div>
 
