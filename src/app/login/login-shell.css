@@ -1,0 +1,41 @@
+/* Login route shell — used by src/app/login/[[...sign-in]]/page.tsx */
+
+@layer components {
+  .login-page {
+    position: relative;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    background: #f7f9fe; /* colors.surface */
+    color: #191c1f;      /* colors.onSurface */
+    font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .login-page-brand {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 700;
+    font-style: italic;
+    color: #006699;
+    text-align: center;
+    display: block;
+    margin-bottom: 1.5rem;
+  }
+
+  .login-page-center {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    width: 100%;
+  }
+
+  .login-page-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 28rem;
+  }
+}

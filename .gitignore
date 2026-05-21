@@ -43,6 +43,9 @@ yarn-error.log*
 *.sublime-workspace
 *.sublime-project
 
+# TypeScript incremental build info
+tsconfig.tsbuildinfo
+
 # OS
 Thumbs.db
 
