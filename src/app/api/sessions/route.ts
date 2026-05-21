@@ -9,33 +9,27 @@
 
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import OpenAI from 'openai'
-import { RTCPeerConnection } from 'wrtc';
-import { sessionManager } from "@/lib/webrtc/session-manager";
 import { auth } from '@clerk/nextjs/server';
 
 // initialize Prisma client for database queries
 const prisma = new PrismaClient()
-// initialize OpenAI client with API key
-const openai = new OpenAI({apiKey: process.env.OPENAI_API_KEY})
 
 // handler function for POST requests
 export async function POST(req: Request){
-
-    // parse incoming request body as JSON
-    const body = await req.json()
-
-    // extract persona and scenario IDs from input
-    const { personaId, scenarioId } = body
-
+    
     const {userId} = await auth()
-
     if (!userId) {
         return NextResponse.json(
             { error: 'User not authenticated' },
             { status: 401 }
         )
     }
+
+    // parse incoming request body as JSON
+    const body = await req.json()
+
+    // extract persona and scenario IDs from input
+    const { personaId, scenarioId } = body
 
     // validate required Ids received
     if (!personaId || !scenarioId ) {
@@ -105,63 +99,65 @@ export async function POST(req: Request){
     - If the call difficulty is ADVANCED, be more resistant: more objections, slower to warm, harder to close. If BEGINNER, be more forgiving. INTERMEDIATE is the default tone described above.
     - The user should hear *you* speak first when the call connects. Open with a brief, in-character "hello" appropriate to your personality (curt, warm, suspicious, whatever fits).`
 
-    // create realtime session with OpenAI for two-way audio conversation
-    // uses gpt-4o-realtime-preview model
-    const completion = await
-    openai.beta.realtime.sessions.create({
-        model:'gpt-4o-realtime-preview',
-        voice: 'alloy',
-        instructions: systemPrompt,
-        input_audio_transcription: {model: 'whisper-1'} //enable audio transcription
+    //create realtime session with OpenAI for two-way audio conversation
+    //uses gpt-4o-realtime-preview model
+
+    const tokenResponse = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            session: {
+                type: "realtime",
+                model: "gpt-4o-realtime-preview",
+                instructions: systemPrompt,
+                audio: {
+                    output: {voice : "alloy"}
+                }
+             }
+        })
     })
 
-    // extract ephemeral token and openaiSessionId
-    const ephemeral = completion.client_secret.value
-    const openaiSessionId = completion._request_id || null
+    if (!tokenResponse.ok){
+        const error = await tokenResponse.json()
+        console.error("OPENAI token error: ", error)
+        return NextResponse.json(
+            {error : "Failed to create OpenAI session", detail: error},
+            {status: 502}
+        )
+    }
 
-    // generate unique ID to track this session on the client side
-    // to do: change this so we can save the session to the database CallSessions.
-    const sessionId = crypto.randomUUID()
-    const dbSessionId = crypto.randomUUID()
+    const tokenData = await tokenResponse.json()
+    const clientSecret = tokenData.value
+    
+    if(!clientSecret){
+        console.error("Unexpected token response shape: ", tokenData)
+        return NextResponse.json(
+            { error: "Unexpected reponse from OpenAI - no client secret"},
+            { status: 502}
+        )
+    }
 
-    const peerConnection = new RTCPeerConnection({
-        iceServers: [
-            { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']}
-        ]
-    })
-
-    const offer = await peerConnection.createOffer()
-    await peerConnection.setLocalDescription(offer)
-
+    // save to DB now, no peer connection involved
     const callSession = await prisma.callSession.create({
         data: {
-            id: dbSessionId,
             userId,
-            realtimeSessionId: openaiSessionId,
             personaId,
             scenarioId,
+            realtimeSessionId: tokenData.id ?? null,
             status: "IN_PROGRESS",
             startedAt: new Date(),
         }
     })
 
-    sessionManager.createSession(
-        sessionId,
-        dbSessionId,
-        peerConnection,
-        openaiSessionId,
-        ephemeral,
-        personaId,
-        scenarioId
-    )
-
-    // return session details to client to establish connection
+    // return only what the browser needs - it handles WebRTC itself
     return NextResponse.json({
-        sessionId,
-        dbSessionId,
-        webrtcOffer: offer.sdp,
-        clientSecret: ephemeral,
+        dbSessionId: callSession.id,
+        clientSecret,
         model: 'gpt-4o-realtime-preview'
     })
+
 
 }
