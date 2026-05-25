@@ -1,9 +1,9 @@
-import { SignIn } from '@clerk/nextjs'
+import { SignUp } from '@clerk/nextjs'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Login | MockCaller',
-  description: 'Sign in to MockCaller',
+  title: 'Sign Up | MockCaller',
+  description: 'Create your MockCaller account',
 }
 
 const clerkAppearance = {
@@ -51,16 +51,16 @@ const clerkAppearance = {
   },
 }
 
-export default function LoginPage() {
+export default function SignUpPage() {
   return (
     <main className="login-page">
       <div className="login-page-center">
         <div className="login-page-inner">
           <span className="login-page-brand">MockCaller</span>
-          <SignIn
-            path="/login"
+          <SignUp
+            path="/sign-up"
             routing="path"
-            signUpUrl="/sign-up"
+            signInUrl="/login"
             fallbackRedirectUrl="/trainee/dashboard"
             appearance={clerkAppearance}
           />

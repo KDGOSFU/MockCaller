@@ -126,6 +126,14 @@ export const sidebarLinkStyle: React.CSSProperties = {
   fontFamily:    font.body,
 };
 
+/* ── Content wrapper ─────────────────────────────────────────────── */
+export const contentWrapperStyle: React.CSSProperties = {
+  flex:          1,
+  display:       'flex',
+  flexDirection: 'column',
+  minWidth:      0,
+};
+
 /* ── Top bar ─────────────────────────────────────────────────────── */
 export const topBarStyle: React.CSSProperties = {
   height:               '60px',
@@ -165,6 +173,25 @@ export const iconBtnStyle: React.CSSProperties = {
   alignItems: 'center',
   padding:    '4px',
   borderRadius: '8px',
+};
+
+export const userNameAlignStyle: React.CSSProperties = {
+  textAlign: 'right',
+};
+
+export const userDisplayNameStyle: React.CSSProperties = {
+  fontSize:   '0.85rem',
+  fontWeight: 600,
+  color:      colors.onSurface,
+  lineHeight: 1.2,
+};
+
+export const userRoleLabelStyle: React.CSSProperties = {
+  fontSize:      '0.65rem',
+  fontWeight:    600,
+  color:         colors.outline,
+  textTransform: 'uppercase',
+  letterSpacing: '0.07em',
 };
 
 export const userChipStyle: React.CSSProperties = {
@@ -247,6 +274,12 @@ export const progressCardStyle: React.CSSProperties = {
   boxShadow:       shadow.card,
 };
 
+export const progressRowStyle: React.CSSProperties = {
+  display:        'flex',
+  alignItems:     'center',
+  justifyContent: 'space-between',
+};
+
 export const progressLabelStyle: React.CSSProperties = {
   fontSize:      '0.7rem',
   fontWeight:    600,
@@ -321,6 +354,12 @@ export const statValueStyle: React.CSSProperties = {
   gap:         '8px',
 };
 
+export const statBadgeStyle = (color: string): React.CSSProperties => ({
+  fontSize:   '0.85rem',
+  fontWeight: 600,
+  color,
+});
+
 export const statSubStyle: React.CSSProperties = {
   fontSize:   '0.8rem',
   color:      colors.outline,
@@ -333,6 +372,26 @@ export const bottomGridStyle: React.CSSProperties = {
   gridTemplateColumns: '1fr 340px',
   gap:                 '28px',
   alignItems:          'start',
+};
+
+/* ── Scenario card internals ─────────────────────────────────────── */
+export const scenarioErrorStyle: React.CSSProperties = {
+  fontSize:     '0.78rem',
+  color:        '#991b1b',
+  marginBottom: '6px',
+};
+
+export const scenarioCardBodyStyle: React.CSSProperties = {
+  flex:     1,
+  minWidth: 0,
+};
+
+export const scenarioCardActionsStyle: React.CSSProperties = {
+  display:        'flex',
+  flexDirection:  'column',
+  alignItems:     'flex-end',
+  gap:            '12px',
+  flexShrink:     0,
 };
 
 /* ── Session cards ───────────────────────────────────────────────── */
@@ -402,6 +461,24 @@ export const sessionStatsStyle: React.CSSProperties = {
   color:      colors.outline,
 };
 
+export const difficultyBadgeStyle = (difficulty: string): React.CSSProperties => {
+  const diff = difficulty?.toLowerCase();
+  const color =
+    diff === 'beginner'     ? { backgroundColor: '#d1fae5', color: '#065f46' } :
+    diff === 'intermediate' ? { backgroundColor: '#fef9c3', color: '#92400e' } :
+    diff === 'advanced'     ? { backgroundColor: '#fee2e2', color: '#991b1b' } :
+                              { backgroundColor: colors.surfaceContainerLow, color: colors.outline };
+  return {
+    fontSize:      '0.65rem',
+    fontWeight:    700,
+    padding:       '3px 8px',
+    borderRadius:  '6px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    ...color,
+  };
+};
+
 export const badgeStyle = (variant: 'gold' | 'review'): React.CSSProperties => ({
   fontSize:        '0.65rem',
   fontWeight:      700,
@@ -412,6 +489,43 @@ export const badgeStyle = (variant: 'gold' | 'review'): React.CSSProperties => (
   backgroundColor: variant === 'gold' ? '#d1fae5' : colors.tertiaryContainer,
   color:           variant === 'gold' ? colors.secondary : colors.tertiary,
   flexShrink:      0,
+});
+
+/* ── Assigned modules container ──────────────────────────────────── */
+export const modulesContainerStyle: React.CSSProperties = {
+  backgroundColor: colors.surfaceContainerLowest,
+  borderRadius:    '16px',
+  padding:         '20px 22px',
+  boxShadow:       '0 4px 24px rgba(0,30,49,0.07)',
+};
+
+export const sectionHeadingBlockStyle: React.CSSProperties = {
+  fontFamily:    'Manrope, sans-serif',
+  fontWeight:    700,
+  fontSize:      '1.1rem',
+  color:         colors.primary,
+  marginBottom:  '16px',
+  display:       'block',
+};
+
+export const moduleIconRowStyle: React.CSSProperties = {
+  display:    'flex',
+  alignItems: 'center',
+  gap:        '8px',
+};
+
+export const moduleStatusDotStyle = (borderColor: string): React.CSSProperties => ({
+  width:        16,
+  height:       16,
+  borderRadius: '50%',
+  border:       `2px solid ${borderColor}`,
+  flexShrink:   0,
+});
+
+export const moduleNameColorStyle = (isLocked: boolean): React.CSSProperties => ({
+  fontSize:   '0.875rem',
+  fontWeight: 500,
+  color:      isLocked ? colors.outlineVariant : colors.onSurface,
 });
 
 /* ── Assigned modules ────────────────────────────────────────────── */

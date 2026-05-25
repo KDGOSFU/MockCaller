@@ -1,11 +1,34 @@
 'use client';
 
+/* ── Backend integration ────────────────────────────────────────────────── */
+
+import { useUser, useClerk } from '@clerk/nextjs';
+
+import { useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
+
+/*───────────Router to start mock call───────────*/
+
+import { useRouter } from 'next/navigation';
+
+/* ── Scenarios from DB ────────────────────────────────────────────────── */
+
+type Scenario = {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  focusSkills: string[];
+};
+
+/* ── Icons from React ────────────────────────────────────────────────── */
 import {
   LayoutDashboard, Phone, BarChart2, BookOpen,
   Bell, Settings, HelpCircle, LogOut, Sparkles,
-  Star, CheckCircle2, Lock, Bot, ChevronRight,
-  CircleDot, User,
+  CheckCircle2, Lock, Bot, ChevronRight, User,
 } from 'lucide-react';
+
+/* ── Styles ────────────────────────────────────────────────── */
 import {
   colors,
   pageStyle, sidebarStyle, logoAreaStyle, logoIconStyle, logoNameStyle, logoSubStyle,
@@ -15,9 +38,9 @@ import {
   progressCardStyle, progressLabelStyle, progressValueStyle,
   progressBarTrackStyle, progressBarFillStyle, progressModulesStyle,
   statsGridStyle, statCardStyle, statLabelStyle, statValueStyle, statSubStyle,
-  bottomGridStyle, sectionHeadingStyle, viewAllStyle,
+  bottomGridStyle, sectionHeadingStyle,
   sessionCardStyle, sessionIconStyle, sessionTitleStyle, sessionMetaStyle,
-  sessionStatsStyle, badgeStyle,
+  difficultyBadgeStyle,
   moduleItemStyle, moduleRowStyle, moduleNameStyle,
   moduleBarTrackStyle, moduleBarFillStyle,
   inProgressBadgeStyle, nextBadgeStyle,
@@ -32,22 +55,6 @@ const NAV_ITEMS = [
   { label: 'Training Library', icon: BookOpen,        active: false },
 ];
 
-const SESSIONS = [
-  {
-    title:      'The Hesitant Philanthropist',
-    meta:       'Completed 2 hours ago • Duration: 14:22',
-    grade:      'A',
-    conversion: true,
-    badge:      'gold' as const,
-  },
-  {
-    title:      'Budget-Conscious Corporate Lead',
-    meta:       'Completed Yesterday • Duration: 08:40',
-    grade:      'B+',
-    conversion: false,
-    badge:      'review' as const,
-  },
-];
 
 const MODULES = [
   { name: 'Building Genuine Rapport',    status: 'done',        pct: 100 },
@@ -58,6 +65,7 @@ const MODULES = [
 
 /* ── Sidebar ─────────────────────────────────────────────────────── */
 function Sidebar() {
+  const { signOut } = useClerk();
   return (
     <aside style={sidebarStyle}>
       {/* Logo */}
@@ -65,8 +73,8 @@ function Sidebar() {
         <div style={logoIconStyle}>
           <Phone size={18} color="#ffffff" />
         </div>
-        <p style={logoNameStyle}>Fundraiser Pro</p>
-        <p style={logoSubStyle}>Lumina Academy</p>
+        <p style={logoNameStyle}>MockCaller</p>
+        <p style={logoSubStyle}>Fundraising Academy</p>
       </div>
 
       {/* Nav */}
@@ -85,7 +93,7 @@ function Sidebar() {
         <button style={sidebarLinkStyle}>
           <HelpCircle size={17} /> Help Center
         </button>
-        <button style={sidebarLinkStyle}>
+        <button style={sidebarLinkStyle} onClick={() => signOut({ redirectUrl: '/login' })}>
           <LogOut size={17} /> Sign Out
         </button>
       </div>
@@ -95,6 +103,8 @@ function Sidebar() {
 
 /* ── Top bar ─────────────────────────────────────────────────────── */
 function TopBar() {
+  const { user } = useUser();
+  const displayName = user ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || 'Trainee' : 'Trainee';
   return (
     <header style={topBarStyle}>
       <span style={topBarTitleStyle}>Trainee Overview</span>
@@ -104,10 +114,10 @@ function TopBar() {
         <div style={userChipStyle}>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontSize: '0.85rem', fontWeight: 600, color: colors.onSurface, lineHeight: 1.2 }}>
-              Alex Thompson
+              {displayName}
             </p>
             <p style={{ fontSize: '0.65rem', fontWeight: 600, color: colors.outline, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-              Level 2 Trainee
+              Trainee
             </p>
           </div>
           <div style={userAvatarStyle}>
@@ -120,52 +130,23 @@ function TopBar() {
 }
 
 /* ── Progress card ───────────────────────────────────────────────── */
-function ProgressCard() {
+function ProgressCard({ completed, total }: { completed: number; total: number }) {
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
   return (
     <div style={progressCardStyle}>
       <p style={progressLabelStyle}>Current Progress</p>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p style={progressValueStyle}>75%</p>
+        <p style={progressValueStyle}>{pct}%</p>
         <Sparkles size={22} color={colors.primaryMid} />
       </div>
       <div style={progressBarTrackStyle}>
-        <div style={progressBarFillStyle(75)} />
+        <div style={progressBarFillStyle(pct)} />
       </div>
-      <p style={progressModulesStyle}>12 of 16 modules completed</p>
+      <p style={progressModulesStyle}>{completed} of {total} personas completed</p>
     </div>
   );
 }
 
-/* ── Session card ────────────────────────────────────────────────── */
-function SessionCard({ session, alt }: { session: typeof SESSIONS[0]; alt: boolean }) {
-  return (
-    <div style={sessionCardStyle(alt)}>
-      <div style={sessionIconStyle}>
-        <Phone size={18} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={sessionTitleStyle}>{session.title}</p>
-        <p style={sessionMetaStyle}>{session.meta}</p>
-        <div style={sessionStatsStyle}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Star size={12} color={colors.tertiary} />
-            Grade: {session.grade}
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <CircleDot size={12} color={colors.outline} />
-            Conversion: {session.conversion ? 'Yes' : 'No'}
-          </span>
-        </div>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
-        <span style={badgeStyle(session.badge)}>
-          {session.badge === 'gold' ? 'Gold Standard' : 'Needs Review'}
-        </span>
-        <ChevronRight size={18} color={colors.outline} />
-      </div>
-    </div>
-  );
-}
 
 /* ── Module item ─────────────────────────────────────────────────── */
 function ModuleItem({ mod }: { mod: typeof MODULES[0] }) {
@@ -199,6 +180,104 @@ function ModuleItem({ mod }: { mod: typeof MODULES[0] }) {
 
 /* ── Page ───────────────────────────────────────────────────────── */
 export default function TraineeDashboardPage() {
+  const router = useRouter();
+  const { user } = useUser();
+  const firstName = user?.firstName ?? 'there';
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [loadingScenarios, setLoadingScenarios] = useState(true);
+  const [scenarioError, setScenarioError] = useState<string | null>(null);
+  const [completedPersonasByScenario, setCompletedPersonasByScenario] = useState<Map<string, Set<string>>>(new Map());
+  const [totalPersonasByScenario, setTotalPersonasByScenario]         = useState<Map<string, number>>(new Map());
+  const [callStats, setCallStats] = useState({ total: 0, today: 0, avgDuration: 0 });
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('scenarios')
+      .select('*')
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Supabase error:', error);
+          setScenarioError(error.message);
+        } else {
+          const order: Record<string, number> = { BEGINNER: 0, beginner: 0, INTERMEDIATE: 1, intermediate: 1, ADVANCED: 2, advanced: 2 };
+          setScenarios((data ?? []).sort((a, b) => (order[a.difficulty] ?? 99) - (order[b.difficulty] ?? 99)));
+        }
+        setLoadingScenarios(false);
+      });
+  }, []);
+
+  // Fetch total personas per scenario
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from('scenario_personas')
+      .select('scenarioId, personaId')
+      .then(({ data }) => {
+        if (!data) return;
+        const totals = new Map<string, number>();
+        data.forEach(r => totals.set(r.scenarioId, (totals.get(r.scenarioId) ?? 0) + 1));
+        setTotalPersonasByScenario(totals);
+      });
+  }, []);
+
+  // Fetch completed sessions for this user
+  useEffect(() => {
+    if (!user?.id) return;
+    const supabase = createClient();
+    supabase
+      .from('call_sessions')
+      .select('scenarioId, personaId, startedAt, durationSec')
+      .eq('userId', user.id)
+      .eq('status', 'COMPLETED')
+      .then(({ data }) => {
+        if (!data) return;
+
+        // Scenario completion map
+        const byScenario = new Map<string, Set<string>>();
+        data.forEach(r => {
+          if (!byScenario.has(r.scenarioId)) byScenario.set(r.scenarioId, new Set());
+          byScenario.get(r.scenarioId)!.add(r.personaId);
+        });
+        setCompletedPersonasByScenario(byScenario);
+
+        // Call stats
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayCount = data.filter(r => new Date(r.startedAt) >= todayStart).length;
+
+        // Average duration — only count sessions with a meaningful duration (> 0)
+        const withDuration = data.filter(r => r.durationSec != null && r.durationSec > 0);
+        const avgDuration  = withDuration.length > 0
+          ? Math.round(withDuration.reduce((sum, r) => sum + r.durationSec, 0) / withDuration.length)
+          : 0;
+
+        setCallStats({ total: data.length, today: todayCount, avgDuration });
+      });
+  }, [user?.id]);
+
+  const DIFFICULTY_ORDER: Record<string, number> = {
+    beginner: 0, BEGINNER: 0,
+    intermediate: 1, INTERMEDIATE: 1,
+    advanced: 2, ADVANCED: 2,
+  };
+
+  const nextScenario = scenarios
+    .filter(s => {
+      const total = totalPersonasByScenario.get(s.id) ?? 0;
+      const done  = completedPersonasByScenario.get(s.id)?.size ?? 0;
+      return done < total;
+    })
+    .sort((a, b) => (DIFFICULTY_ORDER[a.difficulty] ?? 99) - (DIFFICULTY_ORDER[b.difficulty] ?? 99))[0] ?? null;
+
+  function goToNextCall() {
+    if (!nextScenario) return;
+    const doneIds = [...(completedPersonasByScenario.get(nextScenario.id) ?? [])];
+    const params  = new URLSearchParams({ scenarioId: nextScenario.id });
+    if (doneIds.length > 0) params.set('excludePersonaIds', doneIds.join(','));
+    router.push(`/call?${params.toString()}`);
+  }
+
   return (
     <div style={pageStyle}>
       <Sidebar />
@@ -211,18 +290,25 @@ export default function TraineeDashboardPage() {
           {/* Hero + Progress */}
           <div style={heroGridStyle}>
             <div>
-              <h1 style={heroHeadingStyle}>Welcome back, Alex.</h1>
+              <h1 style={heroHeadingStyle}>Welcome back, {firstName}.</h1>
               <p style={heroSubStyle}>Your next milestone is near.</p>
               <p style={heroBodyStyle}>
                 You&apos;ve completed 75% of the &ldquo;High-Net-Worth Engagement&rdquo; track.
                 Focusing on the &lsquo;Closing Ask&rsquo; module will boost your conversion
                 performance by an estimated 12%.
               </p>
-              <button style={heroCTAStyle}>
-                Start Next Lesson: The Art of the Ask
+              <button
+                style={{ ...heroCTAStyle, ...(!nextScenario && { opacity: 0.5, cursor: 'default' }) }}
+                onClick={goToNextCall}
+                disabled={!nextScenario}
+              >
+                {nextScenario ? `Start Next Call: ${nextScenario.title}` : 'All Scenarios Completed!'}
               </button>
             </div>
-            <ProgressCard />
+            <ProgressCard
+              completed={[...completedPersonasByScenario.values()].reduce((sum, s) => sum + s.size, 0)}
+              total={[...totalPersonasByScenario.values()].reduce((sum, n) => sum + n, 0)}
+            />
           </div>
 
           {/* Stats row */}
@@ -230,37 +316,88 @@ export default function TraineeDashboardPage() {
             <div style={statCardStyle}>
               <p style={statLabelStyle}>Average Duration</p>
               <div style={statValueStyle}>
-                12:45
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: colors.tertiary }}>
-                  — Steady
-                </span>
+                {callStats.avgDuration > 0
+                  ? `${String(Math.floor(callStats.avgDuration / 60)).padStart(2, '0')}:${String(callStats.avgDuration % 60).padStart(2, '0')}`
+                  : '—'}
+                {callStats.avgDuration > 0 && (
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: callStats.avgDuration >= 600 && callStats.avgDuration <= 900 ? colors.secondary : colors.tertiary }}>
+                    {callStats.avgDuration < 600 ? '— Too short' : callStats.avgDuration <= 900 ? '— On target' : '— Too long'}
+                  </span>
+                )}
               </div>
               <p style={statSubStyle}>Optimal range: 10–15m</p>
             </div>
             <div style={statCardStyle}>
               <p style={statLabelStyle}>Mock Calls</p>
               <div style={statValueStyle}>
-                24
+                {callStats.total}
                 <span style={{ fontSize: '0.85rem', fontWeight: 600, color: colors.secondary }}>
-                  +3 today
+                  {callStats.today > 0 ? `+${callStats.today} today` : 'none today'}
                 </span>
               </div>
-              <p style={statSubStyle}>Goal: 50 for certification</p>
+              <p style={statSubStyle}>
+                Goal: {[...totalPersonasByScenario.values()].reduce((sum, n) => sum + n, 0)} calls to complete all
+              </p>
             </div>
           </div>
 
           {/* Recent sessions + Assigned modules */}
           <div style={bottomGridStyle}>
 
-            {/* Recent sessions */}
+            {/* Mock Scenarios sessions */}
             <div>
               <div style={sectionHeadingStyle}>
-                Recent Training Sessions
-                <button style={viewAllStyle}>View All History</button>
+                Call Scenarios
               </div>
-              {SESSIONS.map((s, i) => (
-                <SessionCard key={s.title} session={s} alt={i % 2 !== 0} />
-              ))}
+              {loadingScenarios && (
+                <p style={sessionMetaStyle}>Loading scenarios...</p>
+              )}
+              {scenarioError && (
+                <p style={{ ...sessionMetaStyle, color: 'red' }}>Error: {scenarioError}</p>
+              )}
+              {!loadingScenarios && !scenarioError && scenarios.length === 0 && (
+                <p style={sessionMetaStyle}>No scenarios found. Check Supabase RLS permissions.</p>
+              )}
+              {scenarios.map((scenario, i) => {
+                const donePersonas  = completedPersonasByScenario.get(scenario.id)?.size ?? 0;
+                const totalPersonas = totalPersonasByScenario.get(scenario.id) ?? 0;
+                const isCompleted   = donePersonas > 0;
+                const allDone       = totalPersonas > 0 && donePersonas >= totalPersonas;
+
+                return (
+                  <div key={scenario.id}
+                       style={{
+                         ...sessionCardStyle(i % 2 !== 0),
+                         ...(allDone && { opacity: 0.6, cursor: 'default' }),
+                       }}
+                       onClick={() => {
+                         if (allDone) return;
+                         const doneIds = [...(completedPersonasByScenario.get(scenario.id) ?? [])];
+                         const params = new URLSearchParams({ scenarioId: scenario.id });
+                         if (doneIds.length > 0) params.set('excludePersonaIds', doneIds.join(','));
+                         router.push(`/call?${params.toString()}`);
+                       }}>
+                    <div style={{ ...sessionIconStyle, ...(isCompleted && { backgroundColor: '#d1fae5', color: '#065f46' }) }}>
+                      {isCompleted ? <CheckCircle2 size={18} /> : <Phone size={18} />}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={sessionTitleStyle}>{scenario.title}</p>
+                      <p style={sessionMetaStyle}>{scenario.description}</p>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px', flexShrink: 0 }}>
+                      <span style={difficultyBadgeStyle(scenario.difficulty)}>
+                        {scenario.difficulty}
+                      </span>
+                      <span style={{
+                        fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em',
+                        color: allDone ? '#065f46' : isCompleted ? colors.primary : colors.outline,
+                      }}>
+                        {allDone ? 'COMPLETED' : `${donePersonas}/${totalPersonas}`}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Assigned modules */}
