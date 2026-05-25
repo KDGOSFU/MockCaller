@@ -8,11 +8,12 @@
 // Windows: Invoke-RestMethod -Uri http://localhost:3000/api/sessions -Method POST -ContentType "application/json" -Body '{"personaId":"cmogtxfg40001i82owv7d6o7t","scenarioId":"cmogutfjx0008i8a8nbrnzpip"}'
 
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
 import { auth } from '@clerk/nextjs/server';
+import { prisma } from '@/app/prisma'
 
 // initialize Prisma client for database queries
-const prisma = new PrismaClient()
+// const prisma = new PrismaClient()
 
 // handler function for POST requests
 export async function POST(req: Request){
@@ -111,7 +112,7 @@ export async function POST(req: Request){
         body: JSON.stringify({
             session: {
                 type: "realtime",
-                model: "gpt-4o-realtime-preview",
+                model: "gpt-realtime",
                 instructions: systemPrompt,
                 audio: {
                     output: {voice : "alloy"}
@@ -156,7 +157,7 @@ export async function POST(req: Request){
     return NextResponse.json({
         dbSessionId: callSession.id,
         clientSecret,
-        model: 'gpt-4o-realtime-preview'
+        model: 'gpt-realtime'
     })
 
 

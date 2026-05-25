@@ -47,6 +47,14 @@ type Prospect ={
   city: string;
   degree: string;
 }
+
+//transcript entry type
+type TranscriptEntry = {
+  speaker: 'caller' | 'alumni',
+  text: string;
+  timestampMs: number;
+};
+
 /* ── Static data ────────────────────────────────────────────────── */
 const PAST_GIFTS = [
   { amount: '$5,000',  label: 'Annual Scholarship Fund', date: 'Oct 12, 2023' },
@@ -101,18 +109,21 @@ function ActiveCallContent() {
   const [prospect, setProspect] = useState<Prospect | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [barHeights, setBarHeights] = useState<number[]>([4, 4, 4, 4, 4]);
+  const [callError, setCallError] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
+  const callStartTimeRef = useRef<number>(0);
 
   /* ── Audio refs ── */
   const audioCtxRef  = useRef<AudioContext | null>(null);
   const analyserRef  = useRef<AnalyserNode | null>(null);
   const streamRef    = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const pcRef         = useRef<RTCPeerConnection | null>(null);
+  const aiAudioRef    = useRef<HTMLAudioElement | null>(null);
+  const dcRef         = useRef<RTCDataChannel | null>(null);
 
-  async function startMicrophone() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      streamRef.current = stream;
 
+  async function startMicrophone(stream: MediaStream) {
       const ctx      = new AudioContext();
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
@@ -143,23 +154,76 @@ function ActiveCallContent() {
         animFrameRef.current = requestAnimationFrame(tick);
       }
       tick();
-    } catch (err) {
-      console.error('Microphone access denied:', err);
-    }
   }
+
+  // function stopMicrophone() {
+  //   if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+  //   analyserRef.current?.disconnect();
+  //   audioCtxRef.current?.close();
+  //   streamRef.current?.getTracks().forEach(t => t.stop());
+  //   setBarHeights([4, 4, 4, 4, 4]);
+  // }
 
   function stopMicrophone() {
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     analyserRef.current?.disconnect();
-    audioCtxRef.current?.close();
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+        audioCtxRef.current.close();
+    }
     streamRef.current?.getTracks().forEach(t => t.stop());
+    audioCtxRef.current = null;  // ← add this
     setBarHeights([4, 4, 4, 4, 4]);
+}
+
+  function stopWebRTC() {
+    dcRef.current?.close();
+    pcRef.current?.close();
+    pcRef.current = null;
+    dcRef.current = null;
+    if (aiAudioRef.current) {
+      aiAudioRef.current.srcObject = null;
+      aiAudioRef.current = null;
+    }
+  }
+
+  function handleRealtimeEvent(event: any) {
+    switch (event.type) {
+      // AI finished a turn — grab transcript
+      case 'conversation.item.completed': {
+        const item = event.item;
+        if (item?.role === 'assistant' && item?.content?.[0]?.transcript) {
+          setTranscript(prev => [...prev, {
+            speaker: 'alumni',
+            text: item.content[0].transcript,
+            timestampMs: Date.now() - callStartTimeRef.current,
+          }]);
+        }
+        break;
+      }
+      // User speech transcribed
+      case 'conversation.item.created': {
+        const item = event.item;
+        if (item?.role === 'user' && item?.content?.[0]?.transcript) {
+          setTranscript(prev => [...prev, {
+            speaker: 'caller',
+            text: item.content[0].transcript,
+            timestampMs: Date.now() - callStartTimeRef.current,
+          }]);
+        }
+        break;
+      }
+      default:
+        // uncomment to debug all incoming events:
+        // console.log('realtime event:', event.type, event)
+        break;
+    }
   }
 
   // Clean up on unmount
-  useEffect(() => () => stopMicrophone(), []);
+  useEffect(() => () => { stopMicrophone(); stopWebRTC(); }, []);
 
-  useEffect(() => {
+  // fetch scenario — back to original
+useEffect(() => {
     if (!scenarioId) return;
     const supabase = createClient();
     supabase
@@ -171,27 +235,22 @@ function ActiveCallContent() {
         if (error) console.error(error);
         else setScenario(data);
       });
-  }, [scenarioId]);
+}, [scenarioId]);
 
-  useEffect(() => {
+// fetch prospect — back to original  
+useEffect(() => {
     if (!scenarioId) return;
     const supabase = createClient();
-  
     supabase
       .from('scenario_personas')
       .select('personaId')
       .eq('scenarioId', scenarioId)
       .then(({ data, error }) => {
         if (error || !data || data.length === 0) return console.error(error);
-
-        // Filter out already-completed personas, fall back to all if somehow all excluded
         const available = data.filter(r => !excludePersonaIds.has(r.personaId));
         const pool = available.length > 0 ? available : data;
-
-        // Pick a random persona from the remaining pool
         const randomIndex = Math.floor(Math.random() * pool.length);
         const personaId = pool[randomIndex].personaId;
-
         supabase
           .from('prospect_personas')
           .select('*')
@@ -202,20 +261,32 @@ function ActiveCallContent() {
             setProspect(p);
           });
       });
-  }, [scenarioId]);
+}, [scenarioId]);
 
-  const contactDetails = prospect ? [
-    { label: 'Degree',       value: prospect.degree,          link: false },
-    { label: 'Grad Year',    value: prospect.graduationYear,  link: false },
-    { label: 'Email',        value: prospect.email,           link: true  },
-    { label: 'Current Role', value: prospect.currentRole,     link: false },
-  ] : [];
-
-  const scenarioBrief = scenario ? [
-    { label: 'Title',      value: scenario.title,                    color: colors.primary  },
-    { label: 'Difficulty', value: scenario.difficulty,               color: colors.tertiary },
-    { label: 'Description',      value: scenario.description,  color: colors.primary  },
-  ] : [];
+useEffect(() => {
+    if (!scenarioId) return;
+    const supabase = createClient();
+    supabase
+      .from('scenario_personas')
+      .select('personaId')
+      .eq('scenarioId', scenarioId)
+      .then(({ data, error }) => {
+        if (error || !data || data.length === 0) return console.error(error);
+        const available = data.filter(r => !excludePersonaIds.has(r.personaId));
+        const pool = available.length > 0 ? available : data;
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        const personaId = pool[randomIndex].personaId;
+        supabase
+          .from('prospect_personas')
+          .select('*')
+          .eq('id', personaId)
+          .single()
+          .then(({ data: p, error: pErr }) => {
+            if (pErr) return console.error(pErr);
+            setProspect(p);
+          });
+      });
+}, [scenarioId]);
 
   useEffect(() => {
     if (!started || ended) return;
@@ -224,57 +295,139 @@ function ActiveCallContent() {
   }, [started, ended]);
 
   async function startCall() {
-    setStarted(true);
-    startMicrophone();
     if (!user || !scenarioId || !prospect) return;
+    setCallError(null);
 
-    const supabase = createClient();
+    try {
+      // 1. get mic stream first (need it for both visualiser and WebRTC)
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      streamRef.current = stream;
 
-    // Upsert trainee into users table (required by FK)
-    await supabase.from('users').upsert({
-      id:        user.id,
-      email:     user.emailAddresses[0]?.emailAddress ?? '',
-      name:      `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || null,
-      updatedAt: new Date().toISOString(),
-    }, { onConflict: 'id' });
+      // 2. start visualiser
+      await startMicrophone(stream);
 
-    // Create the call session
-    const newId = crypto.randomUUID();
-    const { error } = await supabase.from('call_sessions').insert({
-      id:         newId,
-      userId:     user.id,
-      scenarioId,
-      personaId:  prospect.id,
-      status:     'IN_PROGRESS',
-      startedAt:  new Date().toISOString(),
-    });
+      // 3. get ephemeral token + create DB session via your API route
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ personaId: prospect.id, scenarioId }),
+      });
 
-    if (error) console.error('Failed to create call session:', error);
-    else setSessionId(newId);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? 'Failed to create session');
+      }
+
+      const { dbSessionId, clientSecret, model } = await res.json();
+      setSessionId(dbSessionId);
+      callStartTimeRef.current = Date.now();
+
+      // 4. create peer connection
+      const pc = new RTCPeerConnection();
+      pcRef.current = pc;
+
+      // 5. wire up incoming AI audio
+      const aiAudio = document.createElement('audio');
+      aiAudio.autoplay = true;
+      aiAudioRef.current = aiAudio;
+      pc.ontrack = (e) => {
+        aiAudio.srcObject = e.streams[0];
+      };
+
+      // 6. ICE state tracking
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'failed') {
+          setCallError('Connection failed. Please try again.');
+        }
+      };
+
+      // 7. data channel for transcript events
+      const dc = pc.createDataChannel('oai-events');
+      dcRef.current = dc;
+      dc.onmessage = (e) => handleRealtimeEvent(JSON.parse(e.data));
+
+      // 8. add mic track to peer connection
+      stream.getTracks().forEach(t => pc.addTrack(t, stream));
+
+      // 9. SDP offer → OpenAI → SDP answer
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      console.log("model from server:", model); // ← add this
+      
+      const sdpRes = await fetch(`https://api.openai.com/v1/realtime/calls?model=${model}`, {
+          method: 'POST',
+          headers: {
+              'Authorization': `Bearer ${clientSecret}`,
+              'Content-Type': 'application/sdp',
+          },
+          body: offer.sdp,
+      });
+
+      // const sdpRes = await fetch('https://api.openai.com/v1/realtime/calls', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${clientSecret}`,
+      //     'Content-Type': 'application/sdp',
+      //   },
+      //   body: offer.sdp,
+      // });
+
+      if (!sdpRes.ok) {
+        const errText = await sdpRes.text();
+        throw new Error(`OpenAI SDP exchange failed: ${sdpRes.status} — ${errText}`);
+      }
+
+      const answerSdp = await sdpRes.text();
+      await pc.setRemoteDescription({ type: 'answer', sdp: answerSdp });
+
+      // 10. connected — show active call UI
+      setStarted(true);
+
+    } catch (err: any) {
+      console.error('startCall error:', err);
+      setCallError(err.message ?? 'Something went wrong');
+      stopMicrophone();
+      stopWebRTC();
+    }
   }
+
 
   async function confirmEnd() {
     setShowEndModal(false);
     setEnded(true);
     stopMicrophone();
+    stopWebRTC();
 
     if (sessionId) {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('call_sessions')
-        .update({
-          status:      'COMPLETED',
-          endedAt:     new Date().toISOString(),
-          durationSec: elapsed,
-        })
-        .eq('id', sessionId);
-
-      if (error) console.error('Failed to complete call session:', error);
+      // save transcript + mark session complete
+      await fetch(`/api/sessions/${sessionId}/end`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcript, durationSec: elapsed }),
+      }).catch(console.error);
     }
   }
 
+
   const fmt = (s: number) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+
+    const contactDetails = prospect ? [
+    { label: 'Degree',       value: prospect.degree,         link: false },
+    { label: 'Grad Year',    value: prospect.graduationYear, link: false },
+    { label: 'Email',        value: prospect.email,          link: true  },
+    { label: 'Current Role', value: prospect.currentRole,    link: false },
+  ] : [];
+
+  const scenarioBrief = scenario ? [
+    { label: 'Title',       value: scenario.title,       color: colors.primary  },
+    { label: 'Difficulty',  value: scenario.difficulty,  color: colors.tertiary },
+    { label: 'Description', value: scenario.description, color: colors.primary  },
+  ] : [];
+
 
   return (
     <div className="min-h-screen flex flex-col" style={pageStyle}>
@@ -306,10 +459,16 @@ function ActiveCallContent() {
                   <h2 style={captionHeadingStyle}>Ready to begin?</h2>
                   <p style={captionSubStyle}>Review the scenario brief on the right, then start when you&apos;re prepared.</p>
                 </div>
+                {callError && (
+                  <p style={{ color: '#dc2626', fontSize: '0.85rem', maxWidth: 320, textAlign: 'center' }}>
+                    {callError}
+                  </p>
+                )}
                 <button
                   onClick={startCall}
                   className="flex items-center"
                   style={startCallBtnStyle}
+                  disabled={!prospect || !scenario}
                 >
                   <Mic size={18} />
                   Start Call
