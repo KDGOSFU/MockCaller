@@ -5,6 +5,26 @@
 
 @import './login/login-shell.css';
 :root {
+  /* ── Design system tokens ──────────────────────────────────── */
+  --color-primary:           #004d75;
+  --color-primary-mid:       #006699;
+  --color-on-primary:        #ffffff;
+  --color-primary-container: #e0f2fe;
+  --color-secondary:         #006a6a;
+  --color-tertiary:          #713b00;
+  --color-tertiary-container:#ffdcc3;
+  --color-surface:           #f7f9fe;
+  --color-on-surface:        #191c1f;
+  --color-surface-lowest:    #ffffff;
+  --color-surface-low:       #f2f3f8;
+  --color-surface-container: #eef1f7;
+  --color-surface-high:      #e2e6ef;
+  --color-surface-highest:   #dde1ea;
+  --color-outline:           #707880;
+  --color-outline-variant:   #c0c7d0;
+  --shadow-card:             0 4px 24px rgba(0, 30, 49, 0.07);
+
+  /* ── Legacy tokens (manager dashboard) ────────────────────── */
   --bg: #f4f7fb;
   --panel: #ffffff;
   --ink: #172033;
@@ -41,6 +61,8 @@ input {
 }
 
 button {
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
 }
 
