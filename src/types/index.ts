@@ -1,5 +1,3 @@
-export type ViewKey = 'overview' | 'analysis' | 'scenarios'
-
 export type Trainee = {
   id: string
   name: string

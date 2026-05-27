@@ -1,45 +1,53 @@
-import type { ViewKey } from '@/types'
+'use client'
 
-type SidebarProps = {
-  activeView: ViewKey
-  onViewChange: (view: ViewKey) => void
-}
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { BarChart2, HelpCircle, LayoutDashboard, LogOut, Phone } from 'lucide-react'
 
-const navItems: Array<{ id: ViewKey; label: string }> = [
-  { id: 'overview', label: 'Team Overview' },
-  { id: 'analysis', label: 'Call Analysis' },
-  { id: 'scenarios', label: 'Call Scenarios' },
+const navItems = [
+  { href: '/managers-dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/call-scenarios', label: 'Call Scenarios', icon: Phone },
+  { href: '/feedback-analytics', label: 'Analytics', icon: BarChart2 },
 ]
 
-export function Sidebar({ activeView, onViewChange }: SidebarProps) {
+export function Sidebar() {
+  const pathname = usePathname()
+
   return (
     <aside className="sidebar">
       <div>
         <div className="brand">
-          <div className="brand-mark">M</div>
+          <div className="brand-mark">
+            <Phone aria-hidden="true" size={18} strokeWidth={2.4} />
+          </div>
           <div>
-            <strong>MockCaller</strong>
-            <span>Fundraiser Pro</span>
+            <strong>Fundraiser Pro</strong>
+            <span>Lumina Academy</span>
           </div>
         </div>
         <nav className="nav-list" aria-label="Primary">
-          {navItems.map((item) => (
-            <button
-              className={activeView === item.id ? 'nav-item active' : 'nav-item'}
-              key={item.id}
-              onClick={() => onViewChange(item.id)}
-              type="button"
+          {navItems.map(({ href, icon: Icon, label }) => (
+            <Link
+              className={pathname === href ? 'nav-item active' : 'nav-item'}
+              href={href}
+              key={href}
             >
-              <span className="nav-dot" />
-              {item.label}
-            </button>
+              <Icon aria-hidden="true" size={17} strokeWidth={2.2} />
+              {label}
+            </Link>
           ))}
         </nav>
       </div>
       <div className="sidebar-actions">
-        <button className="primary-button full-width" type="button">Start New Mock Call</button>
-        <button className="plain-button" type="button">Help Center</button>
-        <button className="plain-button" type="button">Sign Out</button>
+        <Link className="primary-button full-width" href="/mock-call/active">Start New Mock Call</Link>
+        <button className="plain-button" type="button">
+          <HelpCircle aria-hidden="true" size={17} strokeWidth={2.2} />
+          Help Center
+        </button>
+        <button className="plain-button" type="button">
+          <LogOut aria-hidden="true" size={17} strokeWidth={2.2} />
+          Sign Out
+        </button>
       </div>
     </aside>
   )

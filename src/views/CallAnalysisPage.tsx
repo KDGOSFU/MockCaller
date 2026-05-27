@@ -1,68 +1,86 @@
+import { ManagerShell } from '@/components/ManagerShell'
 import { ProgressBar } from '@/components/ProgressBar'
-import { TimelineEvent } from '@/components/TimelineEvent'
 import { callAnalysis as mockCallAnalysis } from '@/data/mockData'
-import type { CallAnalysis } from '@/types'
+import type { CallAnalysis, TimelineEventData } from '@/types'
+import styles from '@/app/feedback-analytics/feedback-analytics.module.css'
 
 type CallAnalysisPageProps = {
   analysis: CallAnalysis
 }
 
+function TimelineEvent({ event }: { event: TimelineEventData }) {
+  const toneClass = event.tone === 'peak' ? '' : styles[event.tone]
+
+  return (
+    <article className={[styles.timelineItem, toneClass].filter(Boolean).join(' ')}>
+      <time>{event.time}</time>
+      <div className={styles.timelineCard}>
+        <span>{event.label}</span>
+        <h3>{event.title}</h3>
+        <p>{event.copy}</p>
+      </div>
+    </article>
+  )
+}
+
 export function CallAnalysisPage({ analysis }: CallAnalysisPageProps) {
   return (
-    <div className="view narrow-view">
-      <div className="breadcrumb">Analysis / Session #{analysis.sessionId}</div>
-      <div className="analysis-heading">
-        <div>
-          <h1>{analysis.title}</h1>
-          <p>{analysis.description}</p>
+    <ManagerShell title="Feedback & Analytics">
+      <div className="manager-view manager-narrow-view">
+        <div className={styles.breadcrumb}>Analysis / Session #{analysis.sessionId}</div>
+        <div className={styles.analysisHeading}>
+          <div>
+            <h1>{analysis.title}</h1>
+            <p>{analysis.description}</p>
+          </div>
+          <div className={styles.buttonRow}>
+            <button className="secondary-button" type="button">Back to Dashboard</button>
+            <button className="primary-button" type="button">Retake Call</button>
+          </div>
         </div>
-        <div className="button-row">
-          <button className="secondary-button" type="button">Back to Dashboard</button>
-          <button className="primary-button" type="button">Retake Call</button>
-        </div>
-      </div>
 
-      <section className="analysis-grid">
-        <article className="grade-card">
-          <span>Overall Grade</span>
-          <strong>{analysis.grade}</strong>
-          <p>{analysis.percentileLabel}</p>
-        </article>
-        <article className="panel score-panel">
-          {analysis.metrics.map((metric) => (
-            <div key={metric.id}>
-              <div className="strength-row">
-                <span>{metric.label}</span>
-                <strong>{metric.value}%</strong>
+        <section className={styles.analysisGrid}>
+          <article className={styles.gradeCard}>
+            <span>Overall Grade</span>
+            <strong>{analysis.grade}</strong>
+            <p>{analysis.percentileLabel}</p>
+          </article>
+          <article className={`${styles.panel} ${styles.scorePanel}`}>
+            {analysis.metrics.map((metric) => (
+              <div key={metric.id}>
+                <div className={styles.strengthRow}>
+                  <span>{metric.label}</span>
+                  <strong>{metric.value}%</strong>
+                </div>
+                <ProgressBar value={metric.value} />
+                <p>{metric.description}</p>
               </div>
-              <ProgressBar value={metric.value} />
-              <p>{metric.description}</p>
-            </div>
-          ))}
-        </article>
-      </section>
+            ))}
+          </article>
+        </section>
 
-      <section className="panel timeline-panel">
-        <div className="panel-heading">
-          <div>
-            <h2>Call Timeline Analysis</h2>
-            <p>AI-generated commentary on pivotal moments.</p>
+        <section className={`${styles.panel} ${styles.timelinePanel}`}>
+          <div className={styles.panelHeading}>
+            <div>
+              <h2>Call Timeline Analysis</h2>
+              <p>AI-generated commentary on pivotal moments.</p>
+            </div>
           </div>
-        </div>
-        <div className="timeline">
-          {analysis.timelineEvents.map((event) => (
-            <TimelineEvent event={event} key={event.id} />
-          ))}
-        </div>
-        <div className="coach-callout">
-          <div>
-            <strong>AI Coach Suggestion</strong>
-            <p>{analysis.coachSuggestion}</p>
+          <div className={styles.timeline}>
+            {analysis.timelineEvents.map((event) => (
+              <TimelineEvent event={event} key={event.id} />
+            ))}
           </div>
-          <button className="primary-button" type="button">View Module</button>
-        </div>
-      </section>
-    </div>
+          <div className={styles.coachCallout}>
+            <div>
+              <strong>AI Coach Suggestion</strong>
+              <p>{analysis.coachSuggestion}</p>
+            </div>
+            <button className="primary-button" type="button">View Module</button>
+          </div>
+        </section>
+      </div>
+    </ManagerShell>
   )
 }
 
