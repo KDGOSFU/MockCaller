@@ -27,6 +27,7 @@ An advanced AI-powered platform for sales professionals to practice and improve 
 - **Node.js 18+** and npm (or yarn/pnpm)
 - **PostgreSQL database** (Supabase recommended for easy setup)
 - **OpenAI API key** (for AI-powered mock calls)
+- **Clerk** (For Authentication)
 
 ### Installation
 
@@ -42,19 +43,36 @@ An advanced AI-powered platform for sales professionals to practice and improve 
    ```
 
 3. **Set up environment variables**
-   Create a `.env.local` file in the root directory with the following variables:
+
+   Create a `.env.local` file in the root directory with the following variables (Next.js convention):
+
    ```env
    # Database
-   DATABASE_URL="postgresql://[user]:[password]@[host]:5432/database"
+   DATABASE_URL="postgresql://[user]:[password]@[host]:6543/database"
+   DIRECT_URL="postgresql://[user]:[password]@[host]:5432/database"
 
    # OpenAI
    OPENAI_API_KEY="sk-..."
 
    # Supabase (if using Supabase)
    NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
-   NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGc..."
-   SUPABASE_SERVICE_ROLE_KEY="eyJhbGc..."
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY="sb_publishable_..."
+
+   #Clerk Authentication
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+   CLERK_SECRET_KEY="sk_test_..."
    ```
+
+   Create a `.env` file in the root directory with the following variables (For Prisma):
+
+   ```env
+   # Database
+   DATABASE_URL="postgresql://[user]:[password]@[host]:6543/database"
+   DIRECT_URL="postgresql://[user]:[password]@[host]:5432/database"
+
+   # OpenAI
+   OPENAI_API_KEY="sk-..."
+
    See [Environment Variables](#environment-variables) section below for details on obtaining these credentials.
 
 4. **Set up the database**
@@ -77,12 +95,13 @@ An advanced AI-powered platform for sales professionals to practice and improve 
 6. **Open in your browser**
    Navigate to [http://localhost:3000](http://localhost:3000) and you're ready to go!
 
+
 ### Getting API Credentials
 
 **OpenAI API Key:**
 - Go to [OpenAI API Keys](https://platform.openai.com/account/api-keys)
 - Create a new secret key
-- Add it to your `.env.local` as `OPENAI_API_KEY`
+- Add it to your `.env.local` and `.env` as `OPENAI_API_KEY`
 
 **Supabase Setup:**
 - Create a free account at [supabase.com](https://supabase.com)
@@ -95,54 +114,66 @@ An advanced AI-powered platform for sales professionals to practice and improve 
 ```
 MockCaller/
 ├── src/
-│   ├── app/              # Next.js app directory
-│   │   ├── layout.tsx    # Root layout
-│   │   ├── page.tsx      # Home page
-│   │   └── globals.css   # Global styles
-│   ├── components/       # React components
-│   ├── lib/              # Utility functions
-│   └── prompts/          # AI prompt templates
+│   ├── app/                          # Next.js app directory
+│   │   ├── api/
+│   │   │   └── sessions/             # API route for sessions
+│   │   │       └── route.ts
+│   │   ├── layout.tsx                # Root layout
+│   │   ├── page.tsx                  # Home page
+│   │   └── globals.css               # Global styles
+│   ├── components/                   # React components
+│   ├── frontend/                     # Frontend utilities
+│   │   └── managers_dashboard.ts
+│   ├── lib/                          # Utility functions
+│   ├── prompts/                      # AI prompt templates
+│   ├── utils/                        # Utility modules
+│   │   └── supabase/                 # Supabase client utilities
+│   │       ├── client.ts
+│   │       ├── middleware.ts
+│   │       └── server.ts
+│   └── proxy.ts                      # Proxy utilities
 ├── prisma/
-    └── migrations/       # Prisma SQL migrations history
-    └── schema.prisma     # Database schema
-    └── seed.ts           # Persona Seeding
-├── public/               # Static assets
-    └── data/             # Persona Json files
-├── .env                  # Environment variables
-├── .env.local            #  (local)
-├── next.config.js        # Next.js configuration
-├── tsconfig.json         # TypeScript configuration
-├── tailwind.config.ts    # Tailwind CSS configuration
-├── postcss.config.ts     # PostCSS configuration
-└── package.json          # Project dependencies
+│   ├── migrations/                   # Prisma SQL migrations history
+│   ├── schema.prisma                 # Database schema
+│   └── seed.ts                       # Database seeding script
+├── public/                           # Static assets
+│   └── data/
+│       ├── prospects.json            # Prospect data
+│       └── scenarios.json            # Scenario data
+├── next-env.d.ts                     # Next.js TypeScript declarations
+├── next.config.js                    # Next.js configuration
+├── package.json                      # Project dependencies
+├── postcss.config.ts                 # PostCSS configuration
+├── tailwind.config.ts                # Tailwind CSS configuration
+├── tsconfig.json                     # TypeScript configuration
+├── .env                              # Environment variables (Prisma)
+└── .env.local                        # Environment variables (local/Node)
 ```
 
 ## Environment Variables
 
-The `.env.local` file contains sensitive credentials needed to run the application. **Never commit this file to git** (it's already in `.gitignore`).
+The `.env` and `.env.local` file contains sensitive credentials needed to run the application. Prisma and OpenAI is default to use `.env` file, while Node uses `.env.local` by convention. **Never commit this file to git** (it's already in `.gitignore`).
 
-### Required Variables
+### Required Variables (in   `.env`)
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@localhost:5432/mock_caller` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@localhost:6543/mock_caller` |
+| `DIRECT_URL` | PostgreSQL connection string | `postgresql://user:password@localhost:5432/mock_caller` |
 | `OPENAI_API_KEY` | OpenAI API key for AI simulations | `sk-proj-xxxxxxxxxxxxx` |
 
-### Optional Variables (Supabase)
 
-| Variable | Description |
-|----------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key (safe to expose) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (keep secret) |
+### Required Variables (in `.env.local`)
 
-**Note:** Authentication via Clerk is planned for future releases.
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@localhost:6543/mock_caller` |
+| `DIRECT_URL` | PostgreSQL connection string | `postgresql://user:password@localhost:5432/mock_caller` |
+| `OPENAI_API_KEY` | OpenAI API key for AI simulations | `sk-proj-xxxxxxxxxxxxx` |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk Authentication Public Key | `pk_...` |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase Project URL | `https://...` |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY` | Supabase Public Key | `sb_publishable_...` |
 
-### Clerk Authentication (optional)
-```bash
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_..."
-CLERK_SECRET_KEY="sk_..."
-```
 
 ## Commands
 
@@ -157,8 +188,8 @@ npm run start            # Start production server
 # Database
 npx prisma db push      # Push schema changes to database
 npx prisma db pull      # Pull schema from database
-npx prisma studio      # Open Prisma Studio (visual DB browser)
-npx prisma generate    # Generate Prisma Client
+npx prisma studio       # Open Prisma Studio (visual DB browser)
+npx prisma db seed      # Seed the database rows and columns
 
 # Code Quality
 npm run lint            # Run ESLint
@@ -170,10 +201,11 @@ See [DEPENDENCIES.md](DEPENDENCIES.md) for a complete list of all runtime and de
 
 - **React** (19.2.4) - UI framework
 - **Next.js** (16.2.2) - React framework with SSR
-- **Prisma** (6.19.3) - Database ORM
+- **Prisma** (6.19.3) - Database ORM & Migration tool
 - **Supabase** (2.101.1) - PostgreSQL database & auth
 - **Tailwind CSS** (4.2.2) - CSS framework
 - **TypeScript** (6.0.2) - Type safety
+- **OpenAI SDK** (6.35.0) - AI API client for GPT models
 
 Run `npm install` to install all dependencies listed in `package.json`.
 
