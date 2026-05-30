@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ManagerShell } from '@/components/ManagerShell'
+import { TraineeSidebar } from '@/components/TraineeSidebar'
 import { createClient } from '@/utils/supabase/client'
 import styles from '@/app/call-scenarios/call-scenarios.module.css'
+import traineeStyles from './TraineeDashboard.module.css'
 
 type Scenario = {
   id: string
@@ -36,7 +37,7 @@ function ScenarioCard({ scenario }: { scenario: Scenario }) {
   )
 }
 
-export default function CallScenariosPage() {
+function TraineeCallScenariosContent() {
   const [scenarios, setScenarios] = useState<Scenario[]>([])
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState<string | null>(null)
@@ -63,48 +64,51 @@ export default function CallScenariosPage() {
   )
 
   return (
-    <ManagerShell title="Call Scenarios">
-      <div className="manager-view manager-narrow-view">
-        <div className={styles.pageHeading}>
-          <div>
-            <span className={styles.eyebrow}>Scenario Library</span>
-            <h1>Refine your persuasion in a safe space.</h1>
-            <p>Choose from curated AI-powered simulations designed to test specific skills.</p>
-          </div>
+    <div className="manager-view manager-narrow-view">
+      <div className={styles.pageHeading}>
+        <div>
+          <span className={styles.eyebrow}>Scenario Library</span>
+          <h1>Refine your persuasion in a safe space.</h1>
+          <p>Choose from curated AI-powered simulations designed to test specific skills.</p>
         </div>
-
-        <section className={styles.filterPanel}>
-          <span>Filter:</span>
-          {defaultFilters.map((item) => (
-            <button
-              className={`${styles.filterButton} ${filter === item ? styles.active : ''}`}
-              key={item}
-              onClick={() => setFilter(item)}
-              type="button"
-            >
-              {item}
-            </button>
-          ))}
-          <input placeholder="Search scenarios..." />
-        </section>
-
-        {loading && <p style={{ color: 'var(--outline)', padding: '20px 0' }}>Loading scenarios...</p>}
-        {error   && <p style={{ color: 'red', padding: '20px 0' }}>Error: {error}</p>}
-
-        {!loading && !error && (
-          <section className={styles.scenarioGrid}>
-            {visibleScenarios.map((scenario) => (
-              <ScenarioCard key={scenario.id} scenario={scenario} />
-            ))}
-            <article className={styles.customCard}>
-              <div className={styles.plusBox}>+</div>
-              <h2>Custom Challenge?</h2>
-              <p>Have a specific donor persona or scenario? Generate a custom AI simulation.</p>
-              <button className="link-button" type="button">Request Scenario</button>
-            </article>
-          </section>
-        )}
       </div>
-    </ManagerShell>
+
+      <section className={styles.filterPanel}>
+        <span>Filter:</span>
+        {defaultFilters.map((item) => (
+          <button
+            className={`${styles.filterButton} ${filter === item ? styles.active : ''}`}
+            key={item}
+            onClick={() => setFilter(item)}
+            type="button"
+          >
+            {item}
+          </button>
+        ))}
+        <input placeholder="Search scenarios..." />
+      </section>
+
+      {loading && <p style={{ color: 'var(--outline)', padding: '20px 0' }}>Loading scenarios...</p>}
+      {error   && <p style={{ color: 'red', padding: '20px 0' }}>Error: {error}</p>}
+
+      {!loading && !error && (
+        <section className={styles.scenarioGrid}>
+          {visibleScenarios.map((scenario) => (
+            <ScenarioCard key={scenario.id} scenario={scenario} />
+          ))}
+        </section>
+      )}
+    </div>
+  )
+}
+
+export default function TraineeCallScenariosPage() {
+  return (
+    <div className={traineeStyles.page}>
+      <TraineeSidebar />
+      <div className={traineeStyles.contentWrapper}>
+        <TraineeCallScenariosContent />
+      </div>
+    </div>
   )
 }

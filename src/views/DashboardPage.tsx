@@ -1,19 +1,23 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { ManagerShell } from '@/components/ManagerShell'
 import { ProgressBar } from '@/components/ProgressBar'
 import {
-  activities as mockActivities,
+
   strengths as mockStrengths,
   teamAccounts as mockTeamAccounts,
   trainees as mockTrainees,
 } from '@/data/mockData'
-import type { Activity, Strength, TeamAccount, Trainee } from '@/types'
+import { createClient } from '@/utils/supabase/client'
+import type { Strength, TeamAccount, Trainee } from '@/types'
 import styles from '@/app/managers-dashboard/managers-dashboard.module.css'
 
 type DashboardPageProps = {
   trainees: Trainee[]
   teamAccounts: TeamAccount[]
   strengths: Strength[]
-  activities: Activity[]
   lastUpdatedLabel?: string
 }
 
@@ -106,40 +110,107 @@ function StrengthCard({ strengths }: { strengths: Strength[] }) {
   )
 }
 
-function ActivityFeed({ activities }: { activities: Activity[] }) {
+type RecentCall = { id: string; message: string }
+
+function useRecentActivity() {
+  const [items, setItems] = useState<RecentCall[]>([])
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('call_sessions')
+      .select('id, userId, scenarioId, endedAt')
+      .eq('status', 'COMPLETED')
+      .order('endedAt', { ascending: false })
+      .limit(3)
+      .then(async ({ data: sessions }) => {
+        if (!sessions || sessions.length === 0) return
+
+        const userIds     = [...new Set(sessions.map((s) => s.userId))]
+        const scenarioIds = [...new Set(sessions.map((s) => s.scenarioId))]
+
+        const [{ data: users }, { data: scenarios }] = await Promise.all([
+          supabase.from('users').select('id, name').in('id', userIds),
+          supabase.from('scenarios').select('id, title').in('id', scenarioIds),
+        ])
+
+        const userMap     = new Map((users     ?? []).map((u) => [u.id, u.name]))
+        const scenarioMap = new Map((scenarios ?? []).map((s) => [s.id, s.title]))
+
+        setItems(sessions.map((s) => {
+          const firstName    = (userMap.get(s.userId) ?? 'A trainee').split(' ')[0]
+          const scenarioName = scenarioMap.get(s.scenarioId) ?? 'a scenario'
+          return { id: s.id, message: `${firstName} completed "${scenarioName}" with a grade of A-` }
+        }))
+      })
+  }, [])
+
+  return items
+}
+
+function ActivityFeed() {
+  const activities = useRecentActivity()
+
   return (
     <article className={styles.panel}>
       <h2>Recent Activity</h2>
       <ul className={styles.activityList}>
-        {activities.map((activity) => (
-          <li key={activity.id}>{activity.message}</li>
+        {activities.length === 0 && (
+          <li style={{ listStyle: 'none', color: 'var(--outline)' }}>No recent activity yet.</li>
+        )}
+        {activities.map((a) => (
+          <li key={a.id}>{a.message}</li>
         ))}
       </ul>
     </article>
   )
 }
 
+function useTotalCallTime() {
+  const [totalSec, setTotalSec] = useState<number | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('call_sessions')
+      .select('durationSec')
+      .eq('status', 'COMPLETED')
+      .then(({ data }) => {
+        if (!data) return
+        const sum = data.reduce((acc, r) => acc + (r.durationSec ?? 0), 0)
+        setTotalSec(sum)
+      })
+  }, [])
+
+  return totalSec
+}
+
+function formatTotalTime(sec: number) {
+  const h = Math.floor(sec / 3600)
+  const m = Math.floor((sec % 3600) / 60)
+  if (h > 0) return `${h}h ${m}m`
+  return `${m}m`
+}
+
 export function DashboardPage({
   trainees,
   teamAccounts,
   strengths,
-  activities,
   lastUpdatedLabel = 'Last updated: 2m ago',
 }: DashboardPageProps) {
+  const { user } = useUser()
+  const firstName = user?.firstName ?? 'there'
   const teamScore = average(teamAccounts.map((account) => account.empathyScore))
   const trainingHours = teamAccounts.reduce((sum, account) => sum + account.trainingHours, 0)
+  const totalCallSec = useTotalCallTime()
 
   return (
     <ManagerShell title="Manager Dashboard">
       <div className="manager-view">
         <div className={styles.pageHeading}>
           <div>
-            <h1>Team Intelligence Overview</h1>
-            <p>Real-time performance metrics across all active training tracks.</p>
-          </div>
-          <div className={styles.statusRow}>
-            <span className={styles.livePill}>Live Feed</span>
-            <span className={styles.softPill}>{lastUpdatedLabel}</span>
+            <h1>Welcome back, {firstName}.</h1>
+            <p>Here is how your team is doing.</p>
           </div>
         </div>
 
@@ -155,9 +226,9 @@ export function DashboardPage({
             footnote="Based on active donor simulations"
           />
           <MetricCard
-            label="Training Hours"
-            value={trainingHours.toFixed(1)}
-            footnote="+18.4 hrs vs last week"
+            label="Total Call Time"
+            value={totalCallSec === null ? '—' : formatTotalTime(totalCallSec)}
+            footnote="Across all trainees, completed calls"
           />
         </section>
 
@@ -172,7 +243,7 @@ export function DashboardPage({
 
           <aside className={styles.sideStack}>
             <StrengthCard strengths={strengths} />
-            <ActivityFeed activities={activities} />
+            <ActivityFeed />
           </aside>
         </section>
       </div>
@@ -183,7 +254,6 @@ export function DashboardPage({
 export default function DashboardPageRoute() {
   return (
     <DashboardPage
-      activities={mockActivities}
       strengths={mockStrengths}
       teamAccounts={mockTeamAccounts}
       trainees={mockTrainees}

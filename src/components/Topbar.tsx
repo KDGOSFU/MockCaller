@@ -1,3 +1,6 @@
+'use client'
+
+import { useUser } from '@clerk/nextjs'
 import { Bell, Settings, User } from 'lucide-react'
 
 type TopbarProps = {
@@ -5,6 +8,11 @@ type TopbarProps = {
 }
 
 export function Topbar({ title }: TopbarProps) {
+  const { user } = useUser()
+  const displayName = user
+    ? `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || 'Manager'
+    : 'Manager'
+
   return (
     <header className="topbar">
       <span className="topbar-title">{title}</span>
@@ -17,7 +25,7 @@ export function Topbar({ title }: TopbarProps) {
         </button>
         <div className="user-chip">
           <div>
-            <strong>Alex Thompson</strong>
+            <strong>{displayName}</strong>
             <span>Manager</span>
           </div>
           <div className="avatar">

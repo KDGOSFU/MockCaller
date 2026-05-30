@@ -7,7 +7,7 @@ import styles from './TraineeSidebar.module.css';
 
 const NAV_ITEMS = [
   { label: 'Dashboard',        icon: LayoutDashboard, href: '/trainee/dashboard' },
-  { label: 'Call Scenarios',   icon: Phone,           href: '/trainee/scenarios' },
+  { label: 'Call Scenarios',   icon: Phone,           href: '/trainee/call-scenarios' },
   { label: 'Analytics',        icon: BarChart2,       href: '/trainee/analytics' },
   { label: 'Training Library', icon: BookOpen,        href: '/trainee/library'   },
 ];

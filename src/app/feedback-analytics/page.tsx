@@ -1,3 +1,3 @@
-import CallAnalysisPage from '@/views/CallAnalysisPage'
+import TeamAnalyticsPage from '@/views/TeamAnalyticsPage'
 
-export default CallAnalysisPage
+export default TeamAnalyticsPage

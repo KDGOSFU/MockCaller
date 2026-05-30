@@ -1,52 +1,53 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { BarChart2, HelpCircle, LayoutDashboard, LogOut, Phone } from 'lucide-react'
+import { useClerk } from '@clerk/nextjs'
+import { usePathname, useRouter } from 'next/navigation'
+import { LayoutDashboard, Phone, BarChart2, HelpCircle, LogOut } from 'lucide-react'
+import styles from './TraineeSidebar.module.css'
 
-const navItems = [
-  { href: '/managers-dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/call-scenarios', label: 'Call Scenarios', icon: Phone },
-  { href: '/feedback-analytics', label: 'Analytics', icon: BarChart2 },
+const NAV_ITEMS = [
+  { label: 'Dashboard',      icon: LayoutDashboard, href: '/managers-dashboard' },
+  { label: 'Call Scenarios', icon: Phone,            href: '/call-scenarios'     },
+  { label: 'Team Analytics', icon: BarChart2,        href: '/feedback-analytics' },
 ]
 
 export function Sidebar() {
-  const pathname = usePathname()
+  const { signOut } = useClerk()
+  const pathname    = usePathname()
+  const router      = useRouter()
 
   return (
-    <aside className="sidebar">
-      <div>
-        <div className="brand">
-          <div className="brand-mark">
-            <Phone aria-hidden="true" size={18} strokeWidth={2.4} />
-          </div>
-          <div>
-            <strong>Fundraiser Pro</strong>
-            <span>Lumina Academy</span>
-          </div>
+    <aside className={styles.sidebar}>
+      <div className={styles.logoArea}>
+        <div className={styles.logoIcon}>
+          <Phone size={18} color="#ffffff" />
         </div>
-        <nav className="nav-list" aria-label="Primary">
-          {navItems.map(({ href, icon: Icon, label }) => (
-            <Link
-              className={pathname === href ? 'nav-item active' : 'nav-item'}
-              href={href}
-              key={href}
-            >
-              <Icon aria-hidden="true" size={17} strokeWidth={2.2} />
-              {label}
-            </Link>
-          ))}
-        </nav>
+        <p className={styles.logoName}>Fundraiser Pro</p>
+        <p className={styles.logoSub}>Lumina Academy</p>
       </div>
-      <div className="sidebar-actions">
-        <Link className="primary-button full-width" href="/mock-call/active">Start New Mock Call</Link>
-        <button className="plain-button" type="button">
-          <HelpCircle aria-hidden="true" size={17} strokeWidth={2.2} />
-          Help Center
+
+      <nav className={styles.nav}>
+        {NAV_ITEMS.map(({ label, icon: Icon, href }) => (
+          <button
+            key={label}
+            className={pathname === href ? styles.navItemActive : styles.navItem}
+            onClick={() => router.push(href)}
+          >
+            <Icon size={17} />
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <div className={styles.bottom}>
+        <button className={styles.startCallBtn} onClick={() => router.push('/call')}>
+          Start New Mock Call
         </button>
-        <button className="plain-button" type="button">
-          <LogOut aria-hidden="true" size={17} strokeWidth={2.2} />
-          Sign Out
+        <button className={styles.link}>
+          <HelpCircle size={17} /> Help Center
+        </button>
+        <button className={styles.link} onClick={() => signOut({ redirectUrl: '/login' })}>
+          <LogOut size={17} /> Sign Out
         </button>
       </div>
     </aside>

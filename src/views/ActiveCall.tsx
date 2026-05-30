@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import { createClient } from '@/utils/supabase/client';
 import { Settings, BarChart2, Mic, MicOff, PhoneOff, MapPin, User, Clock, CheckCircle2 } from 'lucide-react';
@@ -55,6 +55,7 @@ function SoundBars({ heights }: { heights: number[] }) {
 }
 
 function ActiveCallContent() {
+  const router            = useRouter();
   const searchParams      = useSearchParams();
   const scenarioId        = searchParams.get('scenarioId');
   const excludePersonaIds = new Set((searchParams.get('excludePersonaIds') ?? '').split(',').filter(Boolean));
@@ -269,7 +270,10 @@ function ActiveCallContent() {
                   <p className={styles.callEndedDuration}>Duration: {fmt(elapsed)}</p>
                   <p className={styles.captionSub}>Your session has been recorded and is ready for review.</p>
                 </div>
-                <button className={`flex items-center ${styles.returnBtn}`}>
+                <button
+                  className={`flex items-center ${styles.returnBtn}`}
+                  onClick={() => router.push(`/trainee/results${sessionId ? `?sessionId=${sessionId}` : ''}`)}
+                >
                   <CheckCircle2 size={18} />
                   View Results
                 </button>

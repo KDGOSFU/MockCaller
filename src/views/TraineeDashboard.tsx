@@ -272,7 +272,7 @@ export function TraineeDashboard() {
               {!loadingScenarios && !scenarioError && scenarios.length === 0 && (
                 <p className={styles.sessionMeta}>No scenarios found. Check Supabase RLS permissions.</p>
               )}
-              {scenarios.map((scenario, i) => {
+              {scenarios.slice(0, 3).map((scenario, i) => {
                 const donePersonas  = completedPersonasByScenario.get(scenario.id)?.size ?? 0;
                 const totalPersonas = totalPersonasByScenario.get(scenario.id) ?? 0;
                 const isCompleted   = donePersonas > 0;
@@ -309,6 +309,11 @@ export function TraineeDashboard() {
                   </div>
                 );
               })}
+              {scenarios.length > 3 && (
+                <button className={styles.seeMoreBtn} onClick={() => router.push('/trainee/call-scenarios')}>
+                  See All Scenarios
+                </button>
+              )}
             </div>
 
             <div>

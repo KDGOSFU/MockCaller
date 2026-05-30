@@ -64,7 +64,7 @@ export default function LoginPage() {
             path="/login"
             routing="path"
             signUpUrl="/sign-up"
-            fallbackRedirectUrl="/trainee/dashboard"
+            fallbackRedirectUrl="/"
             appearance={clerkAppearance}
           />
         </div>
