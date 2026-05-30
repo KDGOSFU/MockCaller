@@ -1,0 +1,268 @@
+.pageHeading,
+.statusRow,
+.panelHeading,
+.personCell,
+.strengthRow {
+  display: flex;
+  align-items: center;
+}
+
+.pageHeading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 32px;
+  align-items: start;
+}
+
+.pageHeading p,
+.panel p,
+.metricCard small,
+.metricCard p,
+.personCell small {
+  color: var(--outline);
+}
+
+.pageHeading p {
+  max-width: 580px;
+  margin-bottom: 0;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.statusRow {
+  min-height: 176px;
+  align-items: flex-start;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 16px;
+  background: var(--surface-lowest);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+}
+
+.livePill,
+.softPill,
+.levelTag {
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.livePill {
+  background: #d1fae5;
+  color: var(--secondary);
+}
+
+.softPill,
+.levelTag {
+  background: var(--primary-container);
+  color: var(--primary);
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.4fr) minmax(220px, 1fr) minmax(220px, 1fr);
+  gap: 20px;
+}
+
+.heroMetric,
+.metricCard,
+.panel {
+  border-radius: 16px;
+  background: var(--surface-lowest);
+  box-shadow: var(--shadow-card);
+}
+
+.heroMetric {
+  min-height: 172px;
+  padding: 28px;
+}
+
+.heroMetric span,
+.metricCard p {
+  color: var(--outline);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.heroMetric strong {
+  display: block;
+  margin: 12px 0 10px;
+  color: var(--on-surface);
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 54px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.heroMetric p {
+  max-width: 440px;
+  margin-bottom: 0;
+  color: var(--outline);
+  line-height: 1.55;
+}
+
+.metricCard {
+  padding: 28px;
+}
+
+.metricIcon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 20px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--primary-container);
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.metricCard strong {
+  display: block;
+  margin: 8px 0 8px;
+  color: var(--on-surface);
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 28px;
+  align-items: start;
+}
+
+.panel {
+  padding: 24px;
+}
+
+.panelHeading {
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.panelHeading h2 {
+  margin-bottom: 0;
+  color: var(--primary);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.tableWrap table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.tableWrap th,
+.tableWrap td {
+  padding: 16px 14px;
+  text-align: left;
+}
+
+.tableWrap th {
+  color: var(--outline);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tableWrap td {
+  background: var(--surface-low);
+}
+
+.tableWrap td:first-child {
+  border-radius: 14px 0 0 14px;
+}
+
+.tableWrap td:last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+.personCell {
+  gap: 14px;
+}
+
+.personCell strong,
+.personCell small {
+  display: block;
+}
+
+.personCell > span {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--primary-container);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sideStack,
+.strengthList {
+  display: grid;
+}
+
+.sideStack {
+  gap: 14px;
+}
+
+.strengthList {
+  gap: 20px;
+}
+
+.strengthRow {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.activityList {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--outline);
+  line-height: 1.5;
+}
+
+@media (max-width: 1050px) {
+  .pageHeading,
+  .metricGrid,
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statusRow {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .statusRow {
+    padding: 20px;
+  }
+
+  .heroMetric strong {
+    font-size: 46px;
+  }
+}

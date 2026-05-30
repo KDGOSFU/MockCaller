@@ -1,5 +1,6 @@
 import { SignIn } from '@clerk/nextjs'
 import type { Metadata } from 'next'
+import styles from '../login-shell.module.css'
 
 export const metadata: Metadata = {
   title: 'Login | MockCaller',
@@ -53,15 +54,17 @@ const clerkAppearance = {
 
 export default function LoginPage() {
   return (
-    <main className="login-page">
-      <div className="login-page-center">
-        <div className="login-page-inner">
-          <span className="login-page-brand">MockCaller</span>
+    <main className={styles.page}>
+      <header className={styles.topbar}>
+        <span className={styles.brand}>MockCaller</span>
+      </header>
+      <div className={styles.center}>
+        <div className={styles.inner}>
           <SignIn
             path="/login"
             routing="path"
             signUpUrl="/sign-up"
-            fallbackRedirectUrl="/trainee/dashboard"
+            fallbackRedirectUrl="/"
             appearance={clerkAppearance}
           />
         </div>

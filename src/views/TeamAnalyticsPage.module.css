@@ -1,0 +1,167 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.modal {
+  background: var(--surface-lowest);
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.modalTitle {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: var(--on-surface);
+}
+
+.modalSub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--outline);
+}
+
+.closeBtn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 0;
+  background: var(--surface-low);
+  color: var(--outline);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.closeBtn:hover {
+  background: var(--outline-variant);
+}
+
+.empty {
+  padding: 32px 24px;
+  color: var(--outline);
+  text-align: center;
+  margin: 0;
+}
+
+.logList {
+  overflow-y: auto;
+  padding: 16px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.logItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-low);
+}
+
+.logItemClickable {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.logItemClickable:hover {
+  background: var(--primary-container);
+}
+
+.logIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.logIconDone {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.logIconPending {
+  background: var(--primary-container);
+  color: var(--outline);
+}
+
+.logBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.logTitle {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logMeta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--outline);
+}
+
+.logRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.statusCompleted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.statusIncomplete {
+  background: #fef9c3;
+  color: #92400e;
+}
+
+.duration {
+  font-size: 12px;
+  color: var(--outline);
+  font-weight: 600;
+}

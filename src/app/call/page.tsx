@@ -1,4 +1,4 @@
-'use client';
+import { ActiveCall } from '@/views/ActiveCall';
 
 import { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -648,4 +648,6 @@ export default function ActiveCallPage() {
       <ActiveCallContent />
     </Suspense>
   );
+export default function Page() {
+  return <ActiveCall />;
 }

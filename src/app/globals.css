@@ -3,22 +3,393 @@
 @import 'tailwindcss';
 @config '../../tailwind.config.ts';
 
-@import './login/login-shell.css';
-
-html {
-  scroll-behavior: smooth;
+:root {
+  --surface: #f7f9fe;
+  --surface-lowest: #ffffff;
+  --surface-low: #f2f3f8;
+  --surface-container: #eef1f7;
+  --surface-high: #e2e6ef;
+  --on-surface: #191c1f;
+  --outline: #707880;
+  --outline-variant: #c0c7d0;
+  --primary: #004d75;
+  --primary-mid: #006699;
+  --primary-container: #e0f2fe;
+  --secondary: #006a6a;
+  --secondary-container: #90efef;
+  --tertiary: #713b00;
+  --tertiary-container: #ffdcc3;
+  --error: #ba1a1a;
+  --shadow-card: 0 4px 24px rgba(0, 30, 49, 0.07);
+  --shadow-ambient: 0 20px 40px rgba(0, 30, 49, 0.06);
 }
 
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+h1 {
+  margin-bottom: 8px;
+  color: var(--primary);
+  font-size: clamp(34px, 4vw, 46px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+h2 {
+  margin-bottom: 14px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+h3 {
+  margin-bottom: 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.manager-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+.manager-workspace {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.manager-view {
+  display: grid;
+  flex: 1;
+  gap: 28px;
+  padding: 36px 40px;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.manager-narrow-view {
+  max-width: 1240px;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  width: 220px;
+  height: 100vh;
+  flex-shrink: 0;
+  flex-direction: column;
+  border-right: 1px solid rgba(192, 199, 208, 0.32);
+  background: var(--surface-lowest);
+}
+
+.brand,
+.topbar,
+.topbar-actions,
+.user-chip,
+.plain-button {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px 20px 20px;
+  margin-bottom: 8px;
+}
+
+.brand strong,
+.brand span {
+  display: block;
+}
+
+.brand strong {
+  color: var(--on-surface);
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.brand span {
+  margin-top: 2px;
+  color: var(--secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.brand-mark,
+.icon-button,
+.avatar {
+  display: grid;
+  place-items: center;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+}
+
+.nav-list,
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-list {
+  flex: 1;
+  gap: 2px;
+  padding: 0 12px;
+}
+
+.sidebar-actions {
+  gap: 2px;
+  padding: 16px 12px 24px;
+}
+
+.nav-item,
+.plain-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--outline);
+  text-align: left;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.nav-item.active {
+  background: var(--primary-container);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.plain-button {
+  gap: 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: 60px;
+  flex-shrink: 0;
+  justify-content: space-between;
+  gap: 24px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0 40px;
+  box-shadow: 0 1px 0 rgba(0, 30, 49, 0.07);
+  backdrop-filter: blur(24px);
+}
+
+.topbar-title {
+  color: var(--on-surface);
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.topbar-actions {
+  gap: 16px;
+}
+
+.icon-button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--outline);
+}
+
+.user-chip {
+  gap: 10px;
+}
+
+.user-chip div:first-child {
+  text-align: right;
+}
+
+.user-chip strong,
+.user-chip span {
+  display: block;
+}
+
+.user-chip strong {
+  color: var(--on-surface);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.user-chip span {
+  color: var(--outline);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--surface-high);
+  color: var(--outline);
+}
+
+.primary-button,
+.secondary-button,
+.link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  font-weight: 700;
+}
+
+.primary-button {
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-mid));
+  color: white;
+  padding: 12px 16px;
+}
+
+.secondary-button {
+  border-radius: 12px;
+  background: var(--surface-lowest);
+  color: var(--on-surface);
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.link-button {
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary-mid);
+  padding: 4px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.progress-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-high);
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--primary-mid));
+}
+
+@media (max-width: 1050px) {
+  .manager-shell {
+    display: block;
+  }
+
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .brand {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .nav-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding-bottom: 12px;
+  }
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    position: static;
+    height: auto;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .manager-view {
+    padding: 28px 16px 40px;
+  }
+
+  .nav-list {
+    grid-template-columns: 1fr;
+  }
 }
